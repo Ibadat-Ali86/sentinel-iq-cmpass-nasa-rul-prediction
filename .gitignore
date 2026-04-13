@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Data files (download separately — see README)
+data/raw/*.txt
+data/raw/*.csv
+data/raw/*.zip
+data/processed/
+
+# Model weights & checkpoints
+models/*.pth
+models/*.pt
+models/*.pkl
+models/*.joblib
+
+# Outputs (generated during pipeline)
+outputs/*.log
+outputs/*.png
+outputs/*.jpg
+outputs/*.pdf
+outputs/*.html
+outputs/*.csv
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!models/.gitkeep
+!outputs/.gitkeep
