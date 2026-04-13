@@ -1,0 +1,100 @@
+# =============================================================================
+# SentinelIQ — Docker Compose
+# =============================================================================
+# Services:
+#   postgres   — local PostgreSQL 16 database
+#   ml_server  — FastAPI / Uvicorn ML inference server
+#   nginx      — Nginx reverse proxy (port 80 → ml_server:8000)
+#
+# Usage:
+#   cp .env.example .env && nano .env    # fill in secrets
+#   docker compose up --build            # first run
+#   docker compose up -d                 # detached
+#   docker compose logs -f ml_server    # tail logs
+#   docker compose down -v              # stop + remove volumes
+# =============================================================================
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: sentineliq_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     sentineliq
+      POSTGRES_PASSWORD: sentineliq
+      POSTGRES_DB:       sentineliq
+    ports:
+      - "5432:5432"       # expose for local psql / DBeaver during dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentineliq -d sentineliq"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - sentineliq_net
+
+  # ── ML Server ───────────────────────────────────────────────────────────────
+  ml_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: sentineliq_ml_server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL to use the compose-internal postgres service name
+      DATABASE_URL: postgresql+asyncpg://sentineliq:sentineliq@postgres:5432/sentineliq
+      ML_SERVER_HOST: "0.0.0.0"
+      ML_SERVER_PORT: "8000"
+      UVICORN_WORKERS: "2"
+      PYTHONPATH: /app
+    volumes:
+      - ./data:/app/data:ro          # NASA .txt files (read-only)
+      - ./models:/app/models         # model checkpoints
+      - ./outputs:/app/outputs       # plots, reports
+    ports:
+      - "8000:8000"                  # direct access during dev; nginx handles prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - sentineliq_net
+
+  # ── Nginx Reverse Proxy ──────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: sentineliq_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      ml_server:
+        condition: service_healthy
+    networks:
+      - sentineliq_net
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+
+# ── Networks ───────────────────────────────────────────────────────────────────
+networks:
+  sentineliq_net:
+    driver: bridge

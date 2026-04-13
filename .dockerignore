@@ -1,0 +1,66 @@
+# =============================================================================
+# SentinelIQ — .dockerignore
+# =============================================================================
+# Keeps the Docker build context lean by excluding everything that shouldn't
+# be copied into the image at build time.
+# =============================================================================
+
+# ── Version control ───────────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── Environment & secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example        # keep the example for documentation
+
+# ── Python caches ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+.conda/
+
+# ── Large data & model artifacts (mounted as volumes) ─────────────────────────
+data/raw/
+data/processed/
+models/
+outputs/
+
+# ── Notebooks (not needed at runtime) ────────────────────────────────────────
+notebooks/
+*.ipynb
+
+# ── Documentation ────────────────────────────────────────────────────────────
+docs/
+*.md
+!README.md           # keep for docker image labels if desired
+
+# ── IDE & OS ─────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── CI / CD ───────────────────────────────────────────────────────────────────
+.github/
+.circleci/
