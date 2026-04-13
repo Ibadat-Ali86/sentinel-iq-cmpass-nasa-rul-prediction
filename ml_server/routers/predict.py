@@ -3,22 +3,28 @@ SentinelIQ — RUL Prediction Router
 =====================================
 
 Endpoints:
-  POST /predict/rul    — Single-unit RUL prediction
+  POST /predict/rul    — Single-unit RUL prediction + DB persistence
   POST /predict/batch  — Multi-unit batch RUL prediction
 
 Author: SentinelIQ Team
 Version: 2.0
 """
 
+import asyncio
+import logging
 from datetime import datetime, timezone
 
 import numpy as np
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ml_server.db import get_db
+from ml_server.db import crud
 from ml_server.schemas.requests import BatchRULRequest, RULPredictionRequest
 from ml_server.schemas.responses import BatchRULResponse, RULPredictionResponse
 
 router = APIRouter(prefix="/predict", tags=["RUL Prediction"])
+logger = logging.getLogger(__name__)
 
 
 def _build_sequence_array(req: RULPredictionRequest, feature_cols: list) -> np.ndarray:
@@ -48,6 +54,40 @@ def _build_sequence_array(req: RULPredictionRequest, feature_cols: list) -> np.n
     return arr
 
 
+# ── Helper: fire-and-forget DB persistence ────────────────────────────────────
+
+async def _persist_prediction(
+    db: AsyncSession | None,
+    *,
+    unit_id: int,
+    predicted_rul: float,
+    severity: str,
+    model_used: str,
+    inference_time_ms: float,
+    sequence_length: int,
+) -> None:
+    """
+    Persist a RUL prediction to the database.
+
+    Called via asyncio.create_task() so it never adds latency to the
+    HTTP response.  Errors are logged but not re-raised.
+    """
+    try:
+        await crud.log_prediction(
+            db,
+            unit_id=unit_id,
+            predicted_rul=predicted_rul,
+            severity=severity,
+            model_used=model_used,
+            inference_time_ms=inference_time_ms,
+            sequence_length=sequence_length,
+        )
+    except Exception as exc:
+        logger.warning("DB persistence failed (non-fatal): %s", exc)
+
+
+# ── /predict/rul ──────────────────────────────────────────────────────────────
+
 @router.post(
     "/rul",
     response_model=RULPredictionResponse,
@@ -57,14 +97,16 @@ def _build_sequence_array(req: RULPredictionRequest, feature_cols: list) -> np.n
         "Accepts a sliding-window sequence of sensor observations and returns "
         "the predicted Remaining Useful Life (RUL) in operational cycles, "
         "along with a severity label and inference latency. "
-        "The sequence length should match `sequence_length` from GET /status (default: 30)."
+        "The sequence length should match `sequence_length` from GET /status (default: 30). "
+        "**Result is automatically persisted to PostgreSQL** when DATABASE_URL is configured."
     ),
 )
 async def predict_rul(
     payload: RULPredictionRequest,
     request: Request,
+    db: AsyncSession | None = Depends(get_db),
 ) -> RULPredictionResponse:
-    """Single-unit RUL prediction endpoint."""
+    """Single-unit RUL prediction endpoint — with async DB persistence."""
     svc = request.app.state.inference_service
     feature_cols = svc.feature_cols
 
@@ -78,16 +120,31 @@ async def predict_rul(
             detail=str(exc),
         )
 
+    # ── Fire-and-forget DB write (does not block the response) ──────────────
+    asyncio.create_task(
+        _persist_prediction(
+            db,
+            unit_id=payload.unit_id,
+            predicted_rul=rul,
+            severity=severity,
+            model_used="TCN",
+            inference_time_ms=inference_ms,
+            sequence_length=len(payload.sequence),
+        )
+    )
+
     return RULPredictionResponse(
         unit_id=payload.unit_id,
         predicted_rul=round(rul, 2),
-        confidence_interval=None,  # Extended in Phase 16 with MC Dropout
+        confidence_interval=None,  # Extended with MC Dropout in future phase
         severity=severity,
         model_used="TCN",
         inference_time_ms=round(inference_ms, 2),
         timestamp=datetime.now(tz=timezone.utc),
     )
 
+
+# ── /predict/batch ────────────────────────────────────────────────────────────
 
 @router.post(
     "/batch",
@@ -97,18 +154,21 @@ async def predict_rul(
     description=(
         "Accepts up to 100 engine units in a single request and returns "
         "per-unit RUL predictions. "
-        "Unit IDs must be unique within a single batch request."
+        "Unit IDs must be unique within a single batch request. "
+        "**Each result is persisted to PostgreSQL** when DATABASE_URL is configured."
     ),
 )
 async def predict_batch(
     payload: BatchRULRequest,
     request: Request,
+    db: AsyncSession | None = Depends(get_db),
 ) -> BatchRULResponse:
-    """Multi-unit batch RUL prediction endpoint."""
+    """Multi-unit batch RUL prediction endpoint — with async DB persistence."""
+    import time
+
     svc = request.app.state.inference_service
     feature_cols = svc.feature_cols
 
-    import time
     t_wall = time.perf_counter()
 
     sequences = []
@@ -126,18 +186,34 @@ async def predict_batch(
         )
 
     now = datetime.now(tz=timezone.utc)
-    responses = [
-        RULPredictionResponse(
-            unit_id=uid,
-            predicted_rul=round(rul, 2),
-            confidence_interval=None,
-            severity=sev,
-            model_used="TCN",
-            inference_time_ms=round(ms, 2),
-            timestamp=now,
+    responses = []
+    persist_tasks = []
+
+    for uid, req, (rul, sev, ms) in zip(unit_ids, payload.predictions, batch_results):
+        responses.append(
+            RULPredictionResponse(
+                unit_id=uid,
+                predicted_rul=round(rul, 2),
+                confidence_interval=None,
+                severity=sev,
+                model_used="TCN",
+                inference_time_ms=round(ms, 2),
+                timestamp=now,
+            )
         )
-        for uid, (rul, sev, ms) in zip(unit_ids, batch_results)
-    ]
+        persist_tasks.append(
+            asyncio.create_task(
+                _persist_prediction(
+                    db,
+                    unit_id=uid,
+                    predicted_rul=rul,
+                    severity=sev,
+                    model_used="TCN",
+                    inference_time_ms=ms,
+                    sequence_length=len(req.sequence),
+                )
+            )
+        )
 
     total_ms = (time.perf_counter() - t_wall) * 1000
 

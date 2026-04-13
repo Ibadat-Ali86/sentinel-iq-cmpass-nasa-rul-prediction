@@ -37,6 +37,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.config import config
+from ml_server.db import init_db
 from ml_server.routers import health, predict, anomaly
 from ml_server.services.inference import InferenceService
 from ml_server.schemas.responses import ErrorResponse
@@ -69,6 +70,14 @@ async def lifespan(app: FastAPI):
     logger.info("SentinelIQ ML Server — Starting up")
     logger.info("=" * 60)
 
+    # ── Database ──────────────────────────────────────────────────────────
+    try:
+        await init_db()
+        logger.info("Database        : ready")
+    except Exception as exc:
+        logger.warning("Database init failed (server still starts): %s", exc)
+
+    # ── ML Models ─────────────────────────────────────────────────────────
     svc = InferenceService(config=config)
     svc.load_models()
     app.state.inference_service = svc
