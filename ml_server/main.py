@@ -38,7 +38,7 @@ from fastapi.responses import JSONResponse
 
 from src.config import config
 from ml_server.db import init_db
-from ml_server.routers import health, predict, anomaly
+from ml_server.routers import health, predict, anomaly, maintenance, history
 from ml_server.services.inference import InferenceService
 from ml_server.schemas.responses import ErrorResponse
 
@@ -169,6 +169,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 app.include_router(health.router)
 app.include_router(predict.router)
 app.include_router(anomaly.router)
+app.include_router(maintenance.router)   # Phase 20
+app.include_router(history.router)       # Phase 20
 
 
 # ── Root redirect ─────────────────────────────────────────────────────────────

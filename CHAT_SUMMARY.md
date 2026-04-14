@@ -1,198 +1,156 @@
 # SentinelIQ — Session Handoff Summary
 
 **Date:** 2026-04-14
-**Conversation ID:** fc59c3f9-29d5-41f7-bab0-310019c68ec4
-**Session:** Phase 16 (PostgreSQL Schema + Supabase) + Phase 17 (Docker Containerisation)
+**Session:** Phase 24 (UI Integrations — Components Added & Landing Page Refactored)
+
+---
+
+## ✅ Completed This Session (Phase 24)
+
+- Integrated specialized modern UI components using `framer-motion` and `lucide-react`:
+  - `HeroSection` (Modern landing page hero layout, replacing the legacy one)
+  - `SparklesText` (Textual animation used on Landing and Login pages)
+  - `SignIn1` (Modern glassmorphic Stunning Sign-In connected to `useAuth`)
+  - `HeroGeometric` (A global animated geometric background in the root layout)
+  - `OrbitalLoader` (Rotating orbital loading indicator)
+  - `Button` (A shadcn/ui generic button component)
+- Replaced the hardcoded legacy login page with the new modern stunning sign-in flow.
+- Upgraded the landing page hero section with `HeroSection-9`, utilizing the project's semantic CSS tokens for fluid Dark/Light mode toggling.
+- Adjusted all hardcoded Tailwind colors (`text-white/10`, `zinc-950`) inside the raw components to use SentinelIQ's CSS variables (`var(--surface-primary)`, `var(--color-primary)`).
+- Included additional dependencies into `package.json` (`framer-motion`, `class-variance-authority`, `@radix-ui/react-slot`).
 
 ---
 
 ## ✅ Completed This Session
 
-### Files Created / Modified
+### Phase 23 — Full Frontend Rebuild (7-Layer Implementation)
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `db/schema.sql` | NEW | Raw DDL — `unit_metadata`, `prediction_logs`, `anomaly_events` tables; indexes; `updated_at` trigger; Supabase RLS enabled |
-| `ml_server/db/__init__.py` | NEW | DB package — exports `engine`, `AsyncSessionLocal`, `get_db`, `init_db` |
-| `ml_server/db/engine.py` | NEW | Async SQLAlchemy engine (asyncpg); graceful no-DB mode when `DATABASE_URL` unset |
-| `ml_server/db/models.py` | NEW | SQLAlchemy 2.0 ORM models: `UnitMetadata`, `PredictionLog`, `AnomalyEvent` (NOT PyTorch) |
-| `ml_server/db/crud.py` | NEW | Async CRUD: `upsert_unit_metadata`, `log_prediction`, `log_anomaly_event`, `get_recent_predictions` |
-| `ml_server/routers/predict.py` | MODIFIED | Injects `AsyncSession` via `Depends(get_db)`; fire-and-forget `asyncio.create_task()` DB persistence on every `/predict/rul` and `/predict/batch` |
-| `ml_server/main.py` | MODIFIED | Calls `await init_db()` in lifespan startup; logs DB ready state |
-| `.env.example` | MODIFIED | Added `DATABASE_URL` (asyncpg-format), Supabase vars, server host/port vars |
-| `requirements.txt` | MODIFIED | Added `fastapi==0.111.0`, `uvicorn[standard]==0.29.0`, `pydantic==2.7.1`, `sqlalchemy[asyncio]==2.0.30`, `asyncpg==0.29.0`, `greenlet==3.0.3` |
-| `Dockerfile` | NEW | Multi-stage build: builder (deps + C extensions) → runtime (slim, non-root user `sentineliq:1001`) |
-| `docker-compose.yml` | NEW | 3 services: `postgres:16-alpine` + `ml_server` + `nginx:alpine`; healthchecks; volumes for data/models |
-| `.dockerignore` | NEW | Excludes `.git`, `.env`, `data/raw`, `models`, `notebooks`, `__pycache__`, IDE files |
-| `entrypoint.sh` | NEW | Waits for Postgres (pure Python socket probe, no pg_isready needed), then `exec uvicorn` as PID 1 |
-| `nginx/nginx.conf` | NEW | Reverse proxy port 80 → `ml_server:8000`; gzip; security headers; 60s proxy timeout; `/health` access-log off |
+#### Layer 0 — CSS Design System (`globals.css`)
+- 12 CSS variable tokens for dark/light mode (`--bg`, `--accent`, `--critical`, etc.)
+- 20+ keyframe animations: `fadeUp`, `slideInLeft`, `scaleIn`, `pulseRing`, `criticalRing`, `glowBreathe`, `shimmer`, `float`, `orbDrift1/2/3`, `typewriter`, `blinkCursor`, `marqueeScroll`
+- Hover utility classes: `.hover-card`, `.hover-btn-primary`, `.hover-btn-ghost`, `.hover-stat-card`, `.hover-alert-row`, `.hover-feature-card`
+- Glassmorphism (`.glass`), gradient orbs (`.orb-1/2/3`), tech marquee (`.marquee-track`)
+- Input glow focus effects (`.input-glow`), severity badges (`.badge-critical/warning/normal`)
+- Delay helper classes (`.delay-100` through `.delay-800`)
 
-### Git Commits Pushed
+#### Layer 1 — Theme System
+- **`ThemeContext.tsx`**: localStorage + system preference, `data-theme` attribute on `<html>`, hydration flash suppression
+- Dark mode default, smooth 300ms CSS transitions
 
-| Hash | Message |
-|------|---------|
-| `0740370` | `feat(db): Phase 16 — PostgreSQL schema, async ORM, prediction persistence` |
-| `d5a1ea2` | `feat(docker): Phase 17 — multi-stage Dockerfile, docker-compose, nginx` |
+#### Layer 2 — Auth & Notification Contexts
+- **`AuthContext.tsx`**: 3 demo users (engineer/admin/operator), 900ms simulated login, localStorage persistence, typed error messages
+- **`NotificationsContext.tsx`**: Seeded with 2 critical + 1 warning alert, CRUD operations, max 50 history
+- **`DashboardLayout.tsx`**: Reusable auth guard + sidebar wrapper component (replaces route group layout to avoid Next.js route conflicts)
 
-All commits pushed to: `https://github.com/Ibadat-Ali86/sentinel-iq-cmpass-nasa-rul-prediction`
+#### Layer 3 — Pages
+- **Landing page** (`/`): Hero with drift orbs, gradient headline, live RUL degradation chart, animated number counters, scroll-reveal sections, feature cards with mini-charts, 3-step how-it-works, tech marquee, CTA banner, SEO metadata
+- **Login page** (`/login`): Split layout — left panel with live chart + feature bullets, right panel with glassmorphism card, glow inputs, show/hide password, inline validation with shake animation, copy-to-clipboard demo credentials
+
+#### Layer 4 — Component Rebuilds
+- **`Sidebar.tsx`**: User profile (initials avatar + role badge), theme toggle, unread notification badge, critical alert pill, mobile hamburger with slide-in drawer, spinning CPU logo
+- **`Topbar.tsx`**: Notification dropdown panel with mark-read/clear-all, user avatar chip, live/demo status pill, theme toggle, refresh button
+- **`EngineCard.tsx`**: CSS token styles, business-language anomaly labels, animated progress bar, critical pulse ring, timeAgo timestamps
+- **`AnomalyAlertsPanel.tsx`**: Human-readable sensor name tags, business-language anomaly descriptions, Acknowledge button (slide-in hover), "Acknowledge all" button
+- **`StatCard.tsx`**: Animated number counter (requestAnimationFrame ease-out), severity-aware icon bg, hover-lift effect
+- **`PredictForm.tsx`**: Collapsible manual prediction form with Unit ID/Cycle/Dataset inputs, inline validation, loading/success states, RUL urgency business language
+
+#### Layer 5 — Business Language (`utils.ts`)
+- All 21 NASA C-MAPSS sensor labels (`getSensorLabel`)
+- Severity configs with operator-friendly labels + action text (`getSeverityConfig`)
+- RUL urgency messages (`getRULUrgency`), anomaly messages (`getAnomalyLabel`, `getAnomalyMessage`)
+- Validation functions: `validateEmail`, `validatePassword`, `validateUnitId`, `validateCycle`
+- Role display: `getRoleLabel`, `getRoleBadgeClass`
+- Time/number formatting: `timeAgo`, `formatDate`, `formatDateTime`, `formatMs`, `formatPercent`
+
+#### Pages Rebuilt with DashboardLayout wrapper
+- `/dashboard` — Full fleet overview with all components
+- `/anomalies` — Anomaly score breakdown table with business language
+- `/shap` — Feature importance with getSensorLabel human-readable names
+- `/maintenance` — Work order queue with formatCycles, formatDate
+- `/health` — Service status, model cards, configuration
 
 ---
 
-## 🔄 In Progress
+## 🚨 CRITICAL: Required Manual Step Before Starting
 
-**Nothing partially done** — all planned items for Phases 16 and 17 are complete.
+There is a **route conflict** that must be resolved before starting the dev server.
 
----
+**Run this command from the project root:**
 
-## ⏳ Remaining Work
+```bash
+bash "/media/ibadat/NewVolume/DATA SCIENCE/ML/DATASCIENCE PROJECTS/SentinalIQ_NASA_RUL-CMPASS_SYSTEM/sentinel-iq-cmpass-nasa-rul-prediction/cleanup_routes.sh"
+```
 
-### Phase 18 — Next.js Dashboard Frontend (NOT started)
-- [ ] `npx create-next-app@latest frontend/ --typescript --tailwind --app --src-dir`
-- [ ] Dashboard layout with sidebar navigation
-- [ ] Per-engine RUL status cards (colour-coded by severity: critical/warning/normal)
-- [ ] Real-time anomaly alerts panel (polling `/predict/anomaly` or WebSocket)
-- [ ] SHAP feature importance charts (recharts / d3)
-- [ ] Maintenance schedule table (reads from `/maintenance/schedule`)
-- [ ] `NEXT_PUBLIC_ML_SERVER_URL` env var pointing to backend
+This removes the `(auth)` group page stubs that conflict with the flat routes.
 
-### Phase 19 — Frontend Deployment (NOT started)
-- [ ] Vercel deployment (`vercel --prod`) from `frontend/`
-- [ ] Or Hugging Face Spaces (Gradio wrapper)
-- [ ] Environment variable configuration on host
+Then start the dev server:
 
-### Phase 20 — FastAPI Enhancements (NOT started)
-- [ ] MC Dropout confidence intervals on `/predict/rul`
-- [ ] `POST /predict/shap` — SHAP explanation endpoint
-- [ ] `GET /explain/rca/{unit_id}` — root cause analysis (DTW)
-- [ ] `GET /maintenance/schedule` — MILP schedule endpoint
-- [ ] `GET /history/{unit_id}` — return last N `prediction_logs` rows
-- [ ] JWT authentication middleware (Clerk or custom)
-- [ ] Rate limiting via `slowapi`
-- [ ] Prometheus `/metrics` endpoint
+```bash
+cd "/media/ibadat/NewVolume/DATA SCIENCE/ML/DATASCIENCE PROJECTS/SentinalIQ_NASA_RUL-CMPASS_SYSTEM/sentinel-iq-cmpass-nasa-rul-prediction/frontend"
+npm run dev
+```
 
-### Phase 21 — Production Hardening (NOT started)
-- [ ] Alembic migrations for DB schema evolution
-- [ ] Flower / Celery for background batch jobs (optional)
-- [ ] CI/CD GitHub Actions: test → build → push Docker image → deploy
-- [ ] SSL termination in nginx (Let's Encrypt / certbot)
+Visit:
+- `http://localhost:3000` — Landing page
+- `http://localhost:3000/login` — Login (demo@sentineliq.com / demo1234)
+- `http://localhost:3000/dashboard` — Protected dashboard
 
 ---
 
 ## 🗂 Critical Context for Next Chat
 
 ### Repo Paths
-
 ```
 GitHub repo (work here only):
   /media/ibadat/NewVolume/DATA SCIENCE/ML/DATASCIENCE PROJECTS/SentinalIQ_NASA_RUL-CMPASS_SYSTEM/sentinel-iq-cmpass-nasa-rul-prediction
 
-Source project (DO NOT MODIFY — original workspace):
+Source project (DO NOT MODIFY):
   /media/ibadat/NewVolume/DATA SCIENCE/ML/DATASCIENCE PROJECTS/SentinalIQ_NASA_RUL-CMPASS_SYSTEM/RUL SYSTEM/SentinelIQ_Project
 ```
 
-### Current Repo Structure
+### Demo Credentials
+| Role | Email | Password |
+|------|-------|----------|
+| Engineer | demo@sentineliq.com | demo1234 |
+| Admin | admin@sentineliq.com | admin1234 |
+| Operator | operator@sentineliq.com | operator1234 |
 
+### Route Structure (Post-Cleanup)
 ```
-sentinel-iq-cmpass-nasa-rul-prediction/
-├── src/                         ← All ML modules (complete — DO NOT MODIFY)
-├── pipeline/
-│   └── sentineliq_ml_pipeline.py
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   └── 03_model_evaluation.ipynb
-├── docs/
-│   ├── architecture.md
-│   └── api_reference.md
-├── db/
-│   └── schema.sql               ← ✅ NEW Phase 16
-├── ml_server/
-│   ├── main.py                  ← updated: calls init_db()
-│   ├── routers/
-│   │   ├── health.py
-│   │   ├── predict.py           ← updated: DB persistence via asyncio.create_task()
-│   │   └── anomaly.py
-│   ├── schemas/
-│   │   ├── requests.py
-│   │   └── responses.py
-│   ├── services/
-│   │   └── inference.py
-│   └── db/                      ← ✅ NEW Phase 16
-│       ├── __init__.py
-│       ├── engine.py            ← async engine, get_db(), init_db()
-│       ├── models.py            ← SQLAlchemy ORM (NOT PyTorch)
-│       └── crud.py              ← upsert_unit_metadata, log_prediction, log_anomaly_event
-├── nginx/
-│   └── nginx.conf               ← ✅ NEW Phase 17
-├── Dockerfile                   ← ✅ NEW Phase 17 (multi-stage)
-├── docker-compose.yml           ← ✅ NEW Phase 17 (postgres + ml_server + nginx)
-├── .dockerignore                ← ✅ NEW Phase 17
-├── entrypoint.sh                ← ✅ NEW Phase 17 (waits for postgres, starts uvicorn)
-├── requirements.txt             ← updated: sqlalchemy, asyncpg, fastapi, uvicorn added
-├── .env.example                 ← updated: DATABASE_URL + Supabase vars added
-└── CHAT_SUMMARY.md              ← THIS FILE
+/app
+├── (auth)/          ← Layout-only group (pages deleted by cleanup_routes.sh)
+│   └── layout.tsx  ← Passthrough — auth handled by DashboardLayout component
+├── (public)/
+│   ├── page.tsx    ← Landing page (/)
+│   └── login/
+│       └── page.tsx ← Login (/login)
+├── dashboard/page.tsx   ← Protected via DashboardLayout
+├── anomalies/page.tsx   ← Protected via DashboardLayout
+├── shap/page.tsx        ← Protected via DashboardLayout
+├── maintenance/page.tsx ← Protected via DashboardLayout
+├── health/page.tsx      ← Protected via DashboardLayout
+├── layout.tsx           ← Root with ThemeProvider + AuthProvider + NotificationsProvider
+└── page.tsx             ← Re-exports (public)/page.tsx
 ```
 
-### Key Design Decisions
-
-1. **All production code in the cloned GitHub repo** — never touch `SentinelIQ_Project/`
-2. **DB is optional** — `DATABASE_URL` unset → server starts in no-DB mode; CRUD calls are no-ops
-3. **Fire-and-forget DB writes** — `asyncio.create_task()` in routers so inference latency is unaffected
-4. **`upsert_unit_metadata` auto-runs before `log_prediction`** — FK constraint always satisfied without pre-seeding
-5. **`is_anomaly` is a GENERATED ALWAYS column** — not mapped in ORM to avoid write conflicts
-6. **Docker non-root** — container runs as `sentineliq:1001`; no root processes
-7. **Schema auto-applied in Docker** — `db/schema.sql` mounted at `/docker-entrypoint-initdb.d/` → applied on first postgres start
-8. **`entrypoint.sh` uses PID 1 exec** — `exec uvicorn` so the process handles SIGTERM correctly
-9. **Conda env**: `SentinelIQ` — activate before running outside Docker
-10. **FastAPI server**: `uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 8000`
-
-### How to Run with Docker
-
-```bash
-# 1. Copy and configure .env
-cp .env.example .env
-# Edit .env — DATABASE_URL is pre-set for Docker local dev
-
-# 2. Build and start all services
-docker compose up --build
-
-# 3. Verify
-curl http://localhost/health       # nginx → ml_server
-curl http://localhost:8000/docs    # direct Swagger UI
-
-# 4. Check DB
-docker exec -it sentineliq_postgres psql -U sentineliq -d sentineliq -c "SELECT count(*) FROM prediction_logs;"
-```
-
-### How to Run Locally (no Docker)
-
-```bash
-conda activate SentinelIQ
-pip install -r requirements.txt
-# Set DATABASE_URL in .env (or leave unset for no-DB mode)
-uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 8000
-# → http://localhost:8000/docs
-```
-
----
-
-## 📋 How to Resume in Next Chat
-
-Paste this prompt into the next chat:
-
-> **"Continue SentinelIQ — see CHAT_SUMMARY.md in the GitHub repo. Start Phase 18 (Next.js dashboard frontend). Work in the cloned repo at: /media/ibadat/NewVolume/DATA SCIENCE/ML/DATASCIENCE PROJECTS/SentinalIQ_NASA_RUL-CMPASS_SYSTEM/sentinel-iq-cmpass-nasa-rul-prediction"**
-
-Then:
-1. Agent reads `CHAT_SUMMARY.md`
-2. Picks up at Phase 18 — Next.js dashboard
-3. Continues through Phases 19–21
-4. Always writes a new `CHAT_SUMMARY.md` before token limit
-
----
-
-## Session Rules (carry forward to every session)
-
+### Session Rules
 - Mandatory final step: overwrite `CHAT_SUMMARY.md` → `git commit -m "chore: update CHAT_SUMMARY for session handoff"` → `git push`
-- Work only in the GitHub repo (cloned path above)
 - Never modify `RUL SYSTEM/SentinelIQ_Project/`
 - Commit after each phase, push at session end
+
+### Tech Stack
+- Next.js 16.2.3, React 19, TypeScript
+- Tailwind v4, Pure CSS token system (no Tailwind utilities in component styles)
+- Recharts 3 for charts
+- No framer-motion required (CSS animations only)
+
+---
+
+## ⏳ Remaining Work
+
+1. **Run cleanup_routes.sh** to delete conflicting (auth) group stubs
+2. **Verify build** — `npm run build` should complete cleanly
+3. **Polish**: Add any missing hover transitions, test on mobile
+4. **Connect backend**: When FastAPI is running, change `backendOnline={false}` to `true` in Topbar props
+5. **Commit**: `git add -A && git commit -m "feat: complete frontend rebuild — landing page, auth, dark/light mode, business language"`
+6. **Push**: `git push`
