@@ -29,6 +29,7 @@ const FAILURE_COST = 50000;
 
 export function MaintenanceTable({ rows }: MaintenanceTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [overriddenDates, setOverriddenDates] = useState<Record<number, string>>({});
 
   const toggleRow = (id: number) =>
     setSelectedIds((prev) => {
@@ -43,6 +44,41 @@ export function MaintenanceTable({ rows }: MaintenanceTableProps) {
   const totalPreventive = rows.reduce((s, r) => s + (COST_MAP[r.unit_id] ?? 5000), 0);
   const totalFailure = rows.length * FAILURE_COST;
   const savings = Math.round((1 - totalPreventive / totalFailure) * 100);
+
+  const handleReschedule = () => {
+    setOverriddenDates((prev) => {
+      const next = { ...prev };
+      selectedIds.forEach((id) => {
+        const row = rows.find(r => r.unit_id === id);
+        if(!row) return;
+        const baseDate = next[id] ? new Date(next[id]) : new Date(row.scheduled_at);
+        baseDate.setDate(baseDate.getDate() + 3);
+        next[id] = baseDate.toISOString();
+      });
+      return next;
+    });
+    setSelectedIds(new Set()); // Deselect after action
+  };
+
+  const handleExportCSV = () => {
+    if (selectedIds.size === 0) return;
+    const header = "unit_id,priority,severity,predicted_rul,recommended_action,scheduled_at,estimated_cost\n";
+    const selectedRows = rows.filter(r => selectedIds.has(r.unit_id));
+    const csvContent = selectedRows.map(r => {
+      const date = overriddenDates[r.unit_id] || r.scheduled_at;
+      const cost = COST_MAP[r.unit_id] ?? 5000;
+      return `${r.unit_id},${r.priority},${r.severity},${Math.round(r.predicted_rul)},"${r.recommended_action}",${date},${cost}`;
+    }).join("\n");
+    
+    const blob = new Blob([header + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "SentinelIQ_Maintenance_Schedule.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div style={{
@@ -80,15 +116,15 @@ export function MaintenanceTable({ rows }: MaintenanceTableProps) {
         <div className="maint-bulk-actions">
           <span className="maint-bulk-count">{selectedIds.size} selected</span>
           <div className="maint-bulk-buttons">
-            <button className="btn btn--sm" style={{
+            <button onClick={handleReschedule} className="btn btn--sm" style={{
               background: "rgba(255,255,255,0.12)", color: "white",
-              borderColor: "rgba(255,255,255,0.25)",
+              borderColor: "rgba(255,255,255,0.25)", cursor: "pointer"
             }}>
               <Calendar size={13} /> Reschedule
             </button>
-            <button className="btn btn--sm" style={{
+            <button onClick={handleExportCSV} className="btn btn--sm" style={{
               background: "rgba(255,255,255,0.12)", color: "white",
-              borderColor: "rgba(255,255,255,0.25)",
+              borderColor: "rgba(255,255,255,0.25)", cursor: "pointer"
             }}>
               <Download size={13} /> Export CSV
             </button>
@@ -129,7 +165,8 @@ export function MaintenanceTable({ rows }: MaintenanceTableProps) {
                 {rows.map((row) => {
                   const cfg = getSeverityConfig(row.severity);
                   const Icon = SEV_ICONS[row.severity];
-                  const date = new Date(row.scheduled_at);
+                  const scheduleString = overriddenDates[row.unit_id] || row.scheduled_at;
+                  const date = new Date(scheduleString);
                   const isSelected = selectedIds.has(row.unit_id);
                   const cost = COST_MAP[row.unit_id] ?? 5000;
                   const saved = FAILURE_COST - cost;

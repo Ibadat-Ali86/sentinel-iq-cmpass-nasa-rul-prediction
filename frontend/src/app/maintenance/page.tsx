@@ -5,9 +5,10 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Topbar } from "@/components/Topbar";
 import { MaintenanceTable } from "@/components/MaintenanceTable";
 import { StatCard } from "@/components/StatCard";
+import { MaintenanceGanttChart, rowsToGanttTasks } from "@/components/MaintenanceGanttChart";
 import { useLiveUnits } from "@/hooks/useLiveUnits";
 import { getMockMaintenanceSchedule } from "@/lib/api";
-import { Calendar, AlertTriangle, Clock, CheckCircle2, Wrench, TrendingDown } from "lucide-react";
+import { Calendar, AlertTriangle, Clock, CheckCircle2, TrendingDown } from "lucide-react";
 import { getSeverityConfig, formatCycles, formatDate } from "@/lib/utils";
 
 export default function MaintenancePage() {
@@ -35,6 +36,15 @@ export default function MaintenancePage() {
               severity="normal" icon={<CheckCircle2 className="h-5 w-5" />} />
             <StatCard label="Fleet Coverage" value={`${units.length} units`} sub="Engines under monitoring"
               icon={<TrendingDown className="h-5 w-5" />} />
+          </div>
+
+          {/* V2.0 Spec: Gantt Chart Visualization */}
+          <div className="animate-fade-up delay-50">
+            <MaintenanceGanttChart
+              tasks={rowsToGanttTasks(rows)}
+              totalHours={16}
+              baseHour={6}
+            />
           </div>
 
           <div className="animate-fade-up delay-100">

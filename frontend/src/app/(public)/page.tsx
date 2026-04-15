@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { SparklesText } from "@/components/ui/sparkles-text";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
+import { TurbofanEngineHero } from "@/components/ui/turbofan-engine-hero";
 
 // ── Mock data for live charts ─────────────────────────────────────────────────
 const heroChartData = Array.from({ length: 30 }, (_, i) => ({
@@ -482,9 +483,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: live chart — hidden on mobile; shown from md */}
+            {/* Right: V2.0 — Animated Turbofan Engine 3D Hero Visual */}
             <div
-              className="hero-chart-col [perspective:1200px]"
+              className="hero-chart-col"
               style={{
                 opacity: heroLoaded ? 1 : 0,
                 transform: heroLoaded ? "translateX(0)" : "translateX(30px)",
@@ -492,73 +493,15 @@ export default function LandingPage() {
                 display: "none",
               }}
             >
-              <div className="[transform:rotateX(20deg)_rotateY(-10deg)] hover:[transform:rotateX(0deg)_rotateY(0deg)] transition-all duration-700 ease-out lg:-mr-12">
-                <div className="relative skew-x-[.15rad] hover:skew-x-0 transition-all duration-700 ease-out">
-                  <div style={{
-                    background: "rgba(13,21,38,0.95)", border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 20, padding: "24px",
-                    boxShadow: "0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,182,212,0.06)",
-                    backdropFilter: "blur(20px)",
-                  }}>
-                    {/* Card header */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>Engine #001 — RUL Degradation</p>
-                    <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>30-cycle forecast · TCN ensemble model</p>
-                  </div>
-                  <div style={{
-                    padding: "4px 10px", borderRadius: 99,
-                    background: "rgba(239,68,68,0.12)", color: "#ef4444",
-                    fontSize: 11, fontWeight: 700,
-                    border: "1px solid rgba(239,68,68,0.25)",
-                  }} className="animate-pulse-ring">
-                    8 Cycles Remaining
-                  </div>
-                </div>
-
-                <ResponsiveContainer width="100%" height={200} minWidth={0}>
-                  <AreaChart data={heroChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                    <defs>
-                      <linearGradient id="hero-rul-grad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="cycle" tick={{ fill: "var(--text-subtle)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "var(--text-subtle)", fontSize: 10 }} axisLine={false} tickLine={false} width={32} />
-                    <Tooltip
-                      contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: 12 }}
-                      formatter={(v: number) => [`${v.toFixed(1)} cycles`, "RUL Remaining"]}
-                      labelFormatter={(l) => `Cycle ${l}`}
-                    />
-                    <Area type="monotone" dataKey="rul" stroke="#06b6d4" strokeWidth={2}
-                      fill="url(#hero-rul-grad)" isAnimationActive animationDuration={1500} />
-                  </AreaChart>
-                </ResponsiveContainer>
-
-                <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                  {[
-                    { label: "Current RUL", value: "8.4 cycles", color: "#ef4444" },
-                    { label: "Anomaly Score", value: "0.81 Critical", color: "#ef4444" },
-                    { label: "Model", value: "TCN Ensemble", color: "#06b6d4" },
-                  ].map(({ label, value, color }) => (
-                    <div key={label} style={{
-                      flex: 1, padding: "10px 12px",
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: 10, border: "1px solid rgba(255,255,255,0.06)",
-                    }}>
-                      <p style={{ fontSize: 10, color: "#64748b", marginBottom: 4, letterSpacing: "0.04em" }}>{label.toUpperCase()}</p>
-                      <p style={{ fontSize: 12, fontWeight: 700, color }}>{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <TurbofanEngineHero
+                rul={38.4}
+                anomalyScore={0.72}
+                isLoaded={heroLoaded}
+              />
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
       {/* ════════════════════════════════════════════════════════════ STATS STRIP */}
       <section id="performance" style={{ padding: "5rem 0", borderTop: "1px solid rgba(255,255,255,0.06)" }}>

@@ -89,6 +89,7 @@ export default function DashboardPage() {
                 icon={<AlertTriangle size={20} />}
                 trend={criticalCount > 0 ? "up" : "stable"}
                 trendText={criticalCount > 0 ? `${criticalCount} require attention` : undefined}
+                sparklineData={[1, 2, 1, 3, 2, criticalCount, criticalCount]}
               />
               <StatCard
                 label="Warning Units"
@@ -98,6 +99,7 @@ export default function DashboardPage() {
                 icon={<Zap size={20} />}
                 trend={warningCount > 0 ? "up" : "stable"}
                 trendText={warningCount > 0 ? "Elevated degradation" : undefined}
+                sparklineData={[3, 4, 3, 5, 4, warningCount + 1, warningCount]}
               />
               <StatCard
                 label="Fleet Avg RUL"
@@ -105,6 +107,7 @@ export default function DashboardPage() {
                 sub={`${normalCount}/${units.length} units nominal`}
                 icon={<Activity size={20} />}
                 trend="stable"
+                sparklineData={[avgRUL + 8, avgRUL + 4, avgRUL + 6, avgRUL + 2, avgRUL + 3, avgRUL + 1, avgRUL].map(Math.round)}
               />
               <StatCard
                 label="Avg Inference"
@@ -112,6 +115,7 @@ export default function DashboardPage() {
                 sub="TCN ensemble · CPU inference"
                 icon={<Timer size={20} />}
                 trend="stable"
+                sparklineData={[avgMs + 2, avgMs - 1, avgMs + 3, avgMs - 2, avgMs + 1, avgMs - 1, avgMs].map(v => Math.max(0, v))}
               />
             </div>
           </section>

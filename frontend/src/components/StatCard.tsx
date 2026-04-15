@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer } from "recharts";
 import { getSeverityConfig } from "@/lib/utils";
 import type { Severity } from "@/types/sentineliq";
 
@@ -13,9 +14,14 @@ interface StatCardProps {
   icon?: React.ReactNode;
   trend?: "up" | "down" | "stable";
   trendText?: string;
+  /** V2.0 Spec: 7-day sparkline data array (values only) */
+  sparklineData?: number[];
 }
 
-export function StatCard({ label, value, sub, severity = "normal", icon, trend, trendText }: StatCardProps) {
+export function StatCard({
+  label, value, sub, severity = "normal",
+  icon, trend, trendText, sparklineData,
+}: StatCardProps) {
   const cfg = getSeverityConfig(severity);
   const [displayed, setDisplayed] = useState<string | number>(typeof value === "number" ? 0 : value);
   const animatedRef = useRef(false);
@@ -40,7 +46,7 @@ export function StatCard({ label, value, sub, severity = "normal", icon, trend, 
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
 
   const isCritical = severity === "critical";
-  const isWarning = severity === "warning";
+  const isWarning  = severity === "warning";
 
   const cardBg = isCritical
     ? "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, var(--surface-secondary) 50%)"
@@ -72,12 +78,19 @@ export function StatCard({ label, value, sub, severity = "normal", icon, trend, 
     ? "var(--color-warning)"
     : "var(--text-tertiary)";
 
+  // V2.0 Spec: sparkline color matches severity
+  const sparkColor = isCritical ? "#ef4444" : isWarning ? "#f59e0b" : "#06b6d4";
+
+  // Prepare sparkline chart data
+  const chartData = sparklineData?.map((v, i) => ({ i, v })) ?? [];
+
   return (
     <div
       className="hover-stat-card"
       style={{
         padding: "20px 22px",
-        borderRadius: 14,
+        /* V2.0 Spec: KPI cards use --radius-kpi (20px) */
+        borderRadius: "var(--radius-kpi, 20px)",
         background: cardBg,
         border: cardBorder,
         display: "flex",
@@ -127,6 +140,32 @@ export function StatCard({ label, value, sub, severity = "normal", icon, trend, 
         <p style={{ fontSize: 12, color: isCritical ? "rgba(239,68,68,0.8)" : "var(--text-secondary)", lineHeight: 1.4, marginTop: -4 }}>
           {sub}
         </p>
+      )}
+
+      {/* V2.0 Spec: 7-day sparkline (60px height) */}
+      {chartData.length > 0 && (
+        <div style={{ height: 60, marginTop: 2, marginLeft: -4, marginRight: -4 }} aria-hidden="true">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id={`spark-${label.replace(/\s/g, "")}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor={sparkColor} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={sparkColor} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="v"
+                stroke={sparkColor}
+                strokeWidth={1.5}
+                fill={`url(#spark-${label.replace(/\s/g, "")})`}
+                dot={false}
+                isAnimationActive
+                animationDuration={900}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       )}
 
       {/* Trend indicator */}

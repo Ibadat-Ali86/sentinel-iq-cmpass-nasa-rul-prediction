@@ -24,13 +24,19 @@ export default function AnomaliesPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }} className="animate-fade-up">
             <StatCard label="Critical Anomalies" value={critical.length}
               sub="Reconstruction error ≥ 70% — immediate action" severity={critical.length > 0 ? "critical" : "normal"}
-              icon={<AlertTriangle className="h-5 w-5" />} />
+              icon={<AlertTriangle className="h-5 w-5" />}
+              sparklineData={[1, 2, 1, 3, critical.length, critical.length, critical.length + 1].map(Math.max.bind(null, 0))}
+            />
             <StatCard label="Warning Anomalies" value={warning.length}
               sub="Score 30–70% — monitor closely" severity={warning.length > 0 ? "warning" : "normal"}
-              icon={<Zap className="h-5 w-5" />} />
+              icon={<Zap className="h-5 w-5" />}
+              sparklineData={[3, 4, warning.length + 2, warning.length + 1, warning.length, warning.length + 1, warning.length]}
+            />
             <StatCard label="Units Nominal" value={normal.length}
               sub="No elevated sensor deviation detected" severity="normal"
-              icon={<Shield className="h-5 w-5" />} />
+              icon={<Shield className="h-5 w-5" />}
+              sparklineData={[normal.length - 2, normal.length - 1, normal.length, normal.length + 1, normal.length, normal.length - 1, normal.length].map(Math.max.bind(null, 0))}
+            />
           </div>
 
           <div className="animate-fade-up delay-100">

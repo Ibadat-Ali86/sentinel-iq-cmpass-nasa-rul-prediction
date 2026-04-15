@@ -9,18 +9,18 @@
    SENTINELIQ — ENTERPRISE DESIGN SYSTEM v2.0
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── Animation Timing Tokens ─────────────────────────────────────── */
+/* ── Animation Timing Tokens (V2.0 Spec) ─────────────────────────── */
 :root {
-  --duration-instant: 75ms;
-  --duration-fast:    150ms;
-  --duration-base:    250ms;
-  --duration-slow:    350ms;
-  --duration-slower:  500ms;
+  --duration-instant: 100ms;
+  --duration-fast:    200ms;
+  --duration-base:    300ms;
+  --duration-slow:    500ms;
+  --duration-slower:  800ms;
 
   --ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --ease-out:    cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* ── Elevation System (Material Design 3 Adapted) ──── */
   --elevation-0: none;
@@ -76,10 +76,17 @@
   --radius-none: 0;
   --radius-sm:   0.25rem;  /* 4px  */
   --radius-base: 0.5rem;   /* 8px  */
-  --radius-md:   0.75rem;  /* 12px */
+  --radius-md:   0.75rem;  /* 12px — standard card */
+  --radius-kpi:  1.25rem;  /* 20px — KPI cards (V2.0) */
   --radius-lg:   1rem;     /* 16px */
   --radius-xl:   1.5rem;   /* 24px */
   --radius-full: 9999px;
+
+  /* ── Layout System (V2.0) ──────────────────────────────── */
+  --max-content-width: 1280px;
+  --sidebar-expanded:  280px;
+  --sidebar-collapsed: 72px;
+  --header-height:     72px;
 }
 
 /* ── Dark Mode Tokens ─────────────────────────────────────────────── */
@@ -193,15 +200,18 @@
   --border:          rgba(15, 23, 42, 0.12);
   --border-light:    rgba(15, 23, 42, 0.18);
 
-  --color-primary:       #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-active:#1e40af;
+  /* V2.0 Spec: Primary Base = #1E3A5F (deep navy authority) */
+  --color-primary:        #1e3a5f;
+  --color-primary-hover:  #2b4f73;
+  --color-primary-active: #1a3355;
+  --color-primary-subtle: #ebf0f6;
+  --color-secondary:      #64748b;
   --color-accent:        #7c3aed;
   --color-accent-hover:  #6d28d9;
   --accent:              #0891b2;
   --accent-2:            #2563eb;
   --accent-glow:         rgba(8, 145, 178, 0.10);
-  --accent-glow2:        rgba(37, 99, 235, 0.08);
+  --accent-glow2:        rgba(30, 58, 95, 0.10);
 
   --color-success:    #16a34a;
   --color-success-bg: rgba(22, 163, 74, 0.08);
@@ -460,14 +470,14 @@ html, body {
    HOVER EFFECT UTILITY CLASSES
    ══════════════════════════════════════════════════════════════════ */
 
-/* Cards — lift + shadow on hover */
+/* Cards — lift + shadow on hover (V2.0: -4px lift) */
 .hover-card {
   transition: transform var(--duration-base) var(--ease-in-out),
               box-shadow var(--duration-base) var(--ease-in-out),
               border-color var(--duration-fast) ease;
 }
 .hover-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--elevation-4), 0 0 0 1px var(--accent-glow);
   border-color: rgba(6,182,212,0.3) !important;
 }
@@ -563,9 +573,10 @@ html, body {
   letter-spacing: 0.01em;
 }
 
-.btn--sm  { height: 32px; padding: 0 12px; font-size: 13px; }
-.btn--md  { height: 40px; padding: 0 16px; font-size: 14px; }
-.btn--lg  { height: 48px; padding: 0 24px; font-size: 16px; }
+/* V2.0 Spec: minimum 44px touch target */
+.btn--sm  { height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px; }
+.btn--md  { height: 44px; min-height: 44px; padding: 0 18px; font-size: 14px; }
+.btn--lg  { height: 52px; min-height: 52px; padding: 0 28px; font-size: 16px; }
 
 .btn--primary {
   background: var(--color-primary);
@@ -693,13 +704,15 @@ html, body {
    FORM INPUT SYSTEM
    ══════════════════════════════════════════════════════════════════ */
 
+/* V2.0 Spec: 1.5px border, 3px focus ring */
 .input-glow {
   transition: border-color var(--duration-base) ease,
               box-shadow var(--duration-base) ease;
-  border: 1px solid var(--border-default);
+  border: 1.5px solid var(--border-default);
   background: var(--surface-secondary);
   color: var(--text-primary);
   border-radius: var(--radius-base);
+  min-height: 44px; /* WCAG 2.1 AA minimum touch target */
 }
 .input-glow:focus {
   outline: none;
@@ -708,6 +721,7 @@ html, body {
 }
 .input-glow::placeholder { color: var(--text-tertiary); }
 .input-glow:invalid { border-color: var(--color-critical); }
+.input-glow:invalid:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.25); animation: shake 0.3s ease; }
 .input-glow:disabled {
   background: var(--surface-tertiary);
   color: var(--text-disabled);
@@ -772,9 +786,10 @@ html, body {
    PAGE LAYOUT UTILITIES
    ══════════════════════════════════════════════════════════════════ */
 
+/* V2.0 Spec: max-content-width 1280px */
 .page-content {
   padding: var(--space-8);
-  max-width: 1600px;
+  max-width: var(--max-content-width, 1280px);
   margin: 0 auto;
 }
 @media (max-width: 768px) {
@@ -929,6 +944,16 @@ html, body {
   color: var(--text-primary);
   border-bottom: 1px solid var(--border-subtle);
   transition: background var(--duration-fast) ease;
+}
+/* V2.0 Spec: sticky header on data tables */
+.maintenance-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+/* V2.0 Spec: row hover #EBF0F6 in light mode */
+:root[data-theme="light"] .maintenance-table tbody tr:hover td {
+  background: #EBF0F6;
 }
 .maintenance-table tbody tr:hover td {
   background: var(--hover-overlay);
@@ -1241,14 +1266,16 @@ html, body {
 /* ══════════════════════════════════════════════════════════════════
    TOPBAR HEIGHT STANDARDIZATION
    ══════════════════════════════════════════════════════════════════ */
+/* V2.0 Spec: Header = 72px height */
 .topbar {
-  min-height: 64px;
+  height: var(--header-height, 72px);
+  min-height: var(--header-height, 72px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   border-bottom: 1px solid var(--border-default);
-  background: var(--surface-secondary);
+  background: var(--surface-primary);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   flex-shrink: 0;
@@ -1268,6 +1295,18 @@ html, body {
   color: var(--text-tertiary);
   margin-top: 4px;
   line-height: 1;
+}
+.topbar__health-pulse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  border: 1px solid rgba(34,197,94,0.25);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success);
 }
 
 /* ══════════════════════════════════════════════════════════════════

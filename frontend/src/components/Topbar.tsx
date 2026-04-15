@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { RefreshCw, Wifi, WifiOff, Sun, Moon, Bell, X, CheckCheck } from "lucide-react";
+import { RefreshCw, Wifi, WifiOff, Sun, Moon, Bell, X, CheckCheck, Activity } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationsContext";
 import { timeAgo } from "@/lib/utils";
+import { SentinelIQLogo } from "@/components/ui/sentineliq-logo";
 
 interface TopbarProps {
   title: string;
@@ -133,16 +134,47 @@ export function Topbar({ title, subtitle, lastUpdated, backendOnline = false, on
 
   return (
     <header className="topbar">
-      {/* Left: title */}
-      <div>
-        <h1 className="topbar__title">{title}</h1>
-        {subtitle && (
-          <p className="topbar__subtitle">{subtitle}</p>
-        )}
+      {/* Left: Logo + title */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <Link href="/dashboard" style={{ textDecoration: "none" }}>
+          <SentinelIQLogo size={36} animate={false} showText={false} />
+        </Link>
+        <div>
+          <h1 className="topbar__title">{title}</h1>
+          {subtitle && (
+            <p className="topbar__subtitle">{subtitle}</p>
+          )}
+        </div>
       </div>
 
       {/* Right: controls */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+        {/* V2.0 Spec: Real-time fleet health pulse indicator */}
+        <div
+          className="topbar__health-pulse"
+          aria-label="Fleet health status"
+          title="Fleet health — all systems operational"
+        >
+          {/* Animated SVG waveform pulse */}
+          <svg width="32" height="14" viewBox="0 0 32 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polyline
+              points="0,7 4,7 6,2 8,12 10,5 12,9 14,7 18,7 20,3 22,11 24,7 28,7 32,7"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              style={{
+                strokeDasharray: 80,
+                strokeDashoffset: 0,
+                animation: "marqueeScroll 2.5s linear infinite",
+              }}
+            />
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}>FLEET OK</span>
+          <span className="animate-pulse-ring" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-success)", display: "inline-block" }} />
+        </div>
 
         {/* Backend status pill — de-emphasized in demo mode */}
         <div style={{
