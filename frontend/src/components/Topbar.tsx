@@ -202,7 +202,7 @@ export function Topbar({ title, subtitle, lastUpdated, backendOnline = false, on
 
         {/* Last updated */}
         {timeStr && (
-          <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>Updated {timeStr}</span>
+          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Updated {timeStr}</span>
         )}
 
         {/* Refresh */}

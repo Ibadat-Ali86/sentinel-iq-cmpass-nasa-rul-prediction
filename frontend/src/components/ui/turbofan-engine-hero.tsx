@@ -7,12 +7,14 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface TurbofanEngineHeroProps {
   rul?: number;         // Current RUL (0-125 cycles)
   anomalyScore?: number; // Anomaly score (0-1)
   isLoaded?: boolean;
 }
+
 
 function useAnimatedRUL(startRUL: number) {
   const [rul, setRUL] = useState(startRUL);
@@ -34,6 +36,8 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
   const [rotation, setRotation] = useState(0);
   const animRef = useRef<number>(0);
   const lastRef = useRef<number>(0);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Continuously rotate the fan blades
   useEffect(() => {
@@ -56,6 +60,24 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
   const sevColor = severity === "critical" ? "#ef4444" : severity === "warning" ? "#f59e0b" : "#10b981";
   const sevGlow = severity === "critical" ? "rgba(239,68,68,0.4)" : severity === "warning" ? "rgba(245,158,11,0.3)" : "rgba(16,185,129,0.2)";
 
+  // Theme-aware card colors
+  const cardBg = isDark ? "rgba(8,13,28,0.95)" : "rgba(255,255,255,0.96)";
+  const cardShadow = isDark
+    ? `0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px ${sevColor}15, inset 0 1px 0 rgba(255,255,255,0.04)`
+    : `0 20px 60px rgba(15,23,42,0.10), 0 0 0 1px ${sevColor}20`;
+  const headerTextColor = isDark ? "#f1f5f9" : "#0f172a";
+  const subTextColor = isDark ? "#64748b" : "#94a3b8";
+  const engineCasingFill = isDark ? "rgba(15,23,42,0.6)" : "rgba(241,245,249,0.8)";
+  const engineInnerFill = isDark ? "rgba(13,21,38,0.8)" : "rgba(248,250,252,0.9)";
+  const sensorBoxFill = isDark ? "rgba(8,13,28,0.9)" : "rgba(255,255,255,0.92)";
+  const sensorBoxStroke = isDark ? "rgba(15,23,42,0.7)" : "rgba(15,23,42,0.4)";
+  const exhauseFill = isDark ? "rgba(15,23,42,0.7)" : "rgba(241,245,249,0.85)";
+  const progressBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.08)";
+  const kpiPanelBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)";
+  const kpiPanelBorder = isDark ? "rgba(255,255,255,0.07)" : "rgba(15,23,42,0.08)";
+  const kpiLabelColor = isDark ? "#475569" : "#94a3b8";
+  const rulTextColor = isDark ? "#475569" : "#94a3b8";
+
   return (
     <div
       style={{
@@ -68,15 +90,17 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
     >
       {/* ── Outer Card ── */}
       <div style={{
-        background: "rgba(8,13,28,0.95)",
+        background: cardBg,
         border: `1px solid ${sevColor}30`,
         borderRadius: 24,
         padding: "28px 32px",
         backdropFilter: "blur(20px)",
-        boxShadow: `0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px ${sevColor}15, inset 0 1px 0 rgba(255,255,255,0.04)`,
+        boxShadow: cardShadow,
         position: "relative",
         overflow: "hidden",
+        transition: "background 0.3s ease",
       }}>
+
 
         {/* Ambient glow per severity */}
         <div style={{
@@ -90,10 +114,10 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
         {/* Header row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.01em" }}>
+            <p style={{ fontSize: 13, fontWeight: 800, color: headerTextColor, letterSpacing: "-0.01em" }}>
               Engine #001 — TCN RUL Monitor
             </p>
-            <p style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+            <p style={{ fontSize: 11, color: subTextColor, marginTop: 2 }}>
               CFM56-7B Turbofan · 14-sensor array · Live telemetry
             </p>
           </div>
@@ -126,8 +150,8 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
             aria-hidden="true"
           >
             {/* ── Engine casing (outer nacelle) ── */}
-            <ellipse cx="190" cy="100" rx="170" ry="70" stroke="rgba(148,163,184,0.2)" strokeWidth="1.5" fill="rgba(15,23,42,0.6)" />
-            <ellipse cx="190" cy="100" rx="155" ry="58" stroke="rgba(148,163,184,0.12)" strokeWidth="1" fill="rgba(13,21,38,0.8)" />
+            <ellipse cx="190" cy="100" rx="170" ry="70" stroke="rgba(148,163,184,0.2)" strokeWidth="1.5" fill={engineCasingFill} />
+            <ellipse cx="190" cy="100" rx="155" ry="58" stroke="rgba(148,163,184,0.12)" strokeWidth="1" fill={engineInnerFill} />
 
             {/* ── Fan blades (rotating) ── */}
             <g transform={`rotate(${rotation}, 65, 100)`}>
@@ -205,7 +229,7 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
 
             {/* ── Exhaust nozzle ── */}
             <path d="M 305 68 L 360 80 L 360 120 L 305 132 Z"
-              fill="rgba(15,23,42,0.7)" stroke="rgba(148,163,184,0.2)" strokeWidth="1" />
+              fill={exhauseFill} stroke="rgba(148,163,184,0.2)" strokeWidth="1" />
             {/* Exhaust heat shimmer */}
             {[0, 1, 2].map(i => (
               <line key={i}
@@ -228,7 +252,7 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
                 <line x1={x} y1={y + 6} x2={x} y2={70} stroke={`${color}40`} strokeWidth="1" strokeDasharray="3 2" />
                 {/* Label box */}
                 <rect x={x - 24} y={y - 14} width={50} height={20} rx="4"
-                  fill="rgba(8,13,28,0.9)" stroke={`${color}50`} strokeWidth="1" />
+                  fill={sensorBoxFill} stroke={`${color}50`} strokeWidth="1" />
                 <text x={x + 1} y={y - 2} textAnchor="middle" fontSize="7" fill={color} fontWeight="700" fontFamily="monospace">
                   {label}: {value}
                 </text>
@@ -237,11 +261,11 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
 
             {/* ── RUL arc indicator (bottom) ── */}
             <g transform="translate(190, 185)">
-              <text textAnchor="middle" fontSize="8" fill="#475569" fontFamily="monospace" y="0">
+              <text textAnchor="middle" fontSize="8" fill={rulTextColor} fontFamily="monospace" y="0">
                 RUL: {rul.toFixed(1)} cycles remaining
               </text>
               {/* Progress bar */}
-              <rect x="-80" y="5" width="160" height="4" rx="2" fill="rgba(255,255,255,0.06)" />
+              <rect x="-80" y="5" width="160" height="4" rx="2" fill={progressBg} />
               <rect x="-80" y="5" width={`${rulPct * 160}`} height="4" rx="2" fill={sevColor}>
                 <animate attributeName="width" to={`${rulPct * 160}`} dur="0.3s" fill="freeze" />
               </rect>
@@ -259,10 +283,10 @@ export function TurbofanEngineHero({ rul: initialRUL = 38.4, anomalyScore = 0.72
           ].map(({ label, value, color }) => (
             <div key={label} style={{
               flex: 1, padding: "10px 12px",
-              background: "rgba(255,255,255,0.04)",
-              borderRadius: 10, border: "1px solid rgba(255,255,255,0.07)",
+              background: kpiPanelBg,
+              borderRadius: 10, border: `1px solid ${kpiPanelBorder}`,
             }}>
-              <p style={{ fontSize: 9, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+              <p style={{ fontSize: 9, color: kpiLabelColor, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
               <p style={{ fontSize: 13, fontWeight: 800, color, letterSpacing: "-0.01em", fontFamily: "monospace" }}>{value}</p>
             </div>
           ))}

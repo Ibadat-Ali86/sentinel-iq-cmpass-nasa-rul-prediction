@@ -19,6 +19,8 @@ import {
   ReferenceLine,
 } from "recharts";
 import { BarChart3, TrendingUp, TrendingDown, Info, ArrowUp, ArrowDown } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+
 
 interface SHAPDataPoint {
   feature: string;
@@ -59,6 +61,8 @@ interface CustomTooltipProps {
 }
 
 function WaterfallTooltip({ active, payload }: CustomTooltipProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   const color = getWaterfallColor(d.shapValue);
@@ -67,11 +71,13 @@ function WaterfallTooltip({ active, payload }: CustomTooltipProps) {
 
   return (
     <div style={{
-      background: "var(--surface-overlay, rgba(13,21,38,0.97))",
+      background: isDark ? "var(--surface-overlay)" : "rgba(255,255,255,0.98)",
       border: `1px solid ${color}40`,
       borderRadius: 12,
       padding: "12px 16px",
-      boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${color}20`,
+      boxShadow: isDark
+        ? `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${color}20`
+        : `0 4px 20px rgba(15,23,42,0.12), 0 0 0 1px ${color}20`,
       backdropFilter: "blur(16px)",
       minWidth: 200,
     }}>
@@ -84,24 +90,30 @@ function WaterfallTooltip({ active, payload }: CustomTooltipProps) {
           {d.feature}
         </p>
         <span style={{
-          marginLeft: "auto", fontSize: 10, color: "var(--text-tertiary)",
-          background: "rgba(255,255,255,0.06)", borderRadius: 4,
+          marginLeft: "auto", fontSize: 10,
+          color: isDark ? "var(--text-tertiary)" : "#64748b",
+          background: isDark ? "var(--hover-overlay)" : "rgba(15,23,42,0.06)",
+          borderRadius: 4,
           padding: "1px 6px", fontWeight: 600,
         }}>
           #{d.rank}
         </span>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 10px" }}>
-          <p style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
+        <div style={
+          { background: isDark ? "var(--surface-tertiary)" : "#f1f5f9", borderRadius: 8, padding: "8px 10px" }
+        }>
+          <p style={{ fontSize: 9, color: isDark ? "var(--text-tertiary)" : "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
             SHAP Value
           </p>
           <p style={{ fontSize: 16, fontWeight: 800, color, letterSpacing: "-0.02em" }}>
             {d.shapValue >= 0 ? "+" : ""}{d.shapValue.toFixed(4)}
           </p>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 10px" }}>
-          <p style={{ fontSize: 9, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
+        <div style={{
+          background: isDark ? "var(--surface-tertiary)" : "#f1f5f9", borderRadius: 8, padding: "8px 10px"
+        }}>
+          <p style={{ fontSize: 9, color: isDark ? "var(--text-tertiary)" : "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
             Direction
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>

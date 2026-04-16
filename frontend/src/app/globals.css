@@ -200,6 +200,8 @@
   --border:          rgba(15, 23, 42, 0.12);
   --border-light:    rgba(15, 23, 42, 0.18);
 
+  --glass-bg: rgba(255, 255, 255, 0.80);
+
   /* V2.0 Spec: Primary Base = #1E3A5F (deep navy authority) */
   --color-primary:        #1e3a5f;
   --color-primary-hover:  #2b4f73;
@@ -241,6 +243,12 @@
   --chart-6: #0891b2;
   --chart-7: #4f46e5;
   --chart-8: #e11d48;
+
+  /* Light mode: surface-overlay should be solid white for tooltips */
+  --surface-overlay: #ffffff;
+  /* Light mode hover-overlay uses dark tint */
+  --hover-overlay:  rgba(0, 0, 0, 0.04);
+  --active-overlay: rgba(0, 0, 0, 0.08);
 
   color-scheme: light;
 }
@@ -1153,28 +1161,41 @@ html, body {
    GRADIENT ORBS (landing / login backgrounds)
    ══════════════════════════════════════════════════════════════════ */
 .orb-1 {
-  position: absolute; width: 500px; height: 500px;
+  position: absolute; width: 700px; height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(6,182,212,0.12), transparent 70%);
-  filter: blur(60px);
+  background: radial-gradient(circle, rgba(6,182,212,0.28) 0%, rgba(6,182,212,0.12) 40%, transparent 70%);
+  filter: blur(80px);
   animation: orbDrift1 12s ease-in-out infinite;
   pointer-events: none;
+  z-index: 1;
 }
 .orb-2 {
-  position: absolute; width: 400px; height: 400px;
+  position: absolute; width: 600px; height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59,130,246,0.10), transparent 70%);
-  filter: blur(50px);
+  background: radial-gradient(circle, rgba(59,130,246,0.24) 0%, rgba(59,130,246,0.10) 40%, transparent 70%);
+  filter: blur(70px);
   animation: orbDrift2 15s ease-in-out infinite;
   pointer-events: none;
+  z-index: 1;
 }
 .orb-3 {
-  position: absolute; width: 300px; height: 300px;
+  position: absolute; width: 450px; height: 450px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168,85,247,0.08), transparent 70%);
-  filter: blur(40px);
+  background: radial-gradient(circle, rgba(168,85,247,0.20) 0%, rgba(168,85,247,0.08) 40%, transparent 70%);
+  filter: blur(60px);
   animation: orbDrift3 10s ease-in-out infinite;
   pointer-events: none;
+  z-index: 1;
+}
+/* Light-mode orb variants — same positions, warmer tones */
+:root[data-theme="light"] .orb-1 {
+  background: radial-gradient(circle, rgba(8,145,178,0.18) 0%, rgba(8,145,178,0.06) 40%, transparent 70%);
+}
+:root[data-theme="light"] .orb-2 {
+  background: radial-gradient(circle, rgba(37,99,235,0.14) 0%, rgba(37,99,235,0.05) 40%, transparent 70%);
+}
+:root[data-theme="light"] .orb-3 {
+  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, rgba(124,58,237,0.04) 40%, transparent 70%);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1197,7 +1218,9 @@ html, body {
   border: 1px solid var(--border-default);
 }
 :root[data-theme="light"] .glass {
-  background: rgba(255, 255, 255, 0.80);
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1292,7 +1315,7 @@ html, body {
 }
 .topbar__subtitle {
   font-size: 12px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin-top: 4px;
   line-height: 1;
 }
@@ -1303,7 +1326,7 @@ html, body {
   padding: 6px 12px;
   border-radius: var(--radius-full);
   background: var(--color-success-bg);
-  border: 1px solid rgba(34,197,94,0.25);
+  border: 1px solid rgba(22, 163, 74, 0.3);
   font-size: 12px;
   font-weight: 600;
   color: var(--color-success);
@@ -1603,3 +1626,181 @@ html, body {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   UTILITY SHIMS — only needed if Tailwind classes are missing
+   Tailwind v4 generates hidden, md:flex, flex, md:hidden natively.
+   Keeping these as fallback for non-Tailwind class usage.
+   ══════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 768px) {
+  .md\:block { display: block !important; }
+  .md\:flex  { display: flex !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LANDING PAGE — LIGHT MODE BACKGROUND ENHANCEMENTS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Ensure landing page renders correctly in light mode */
+:root[data-theme="light"] #landing-page {
+  background: #f0f4f8;
+}
+
+/* Subtle gradient tint behind hero in light mode */
+:root[data-theme="light"] #hero {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(8,145,178,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(37,99,235,0.06) 0%, transparent 50%),
+    #f0f4f8;
+}
+
+/* Light mode marquee pill background */
+:root[data-theme="light"] .marquee-track > div {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(15,23,42,0.08) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LANDING NAV — MOBILE MENU
+   ══════════════════════════════════════════════════════════════════ */
+
+#landing-mobile-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  #landing-mobile-menu { display: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LIGHT MODE — CONTRAST ENHANCEMENTS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Ensure muted/subtle text is always readable in light mode */
+:root[data-theme="light"] .text-muted,
+:root[data-theme="light"] [style*="var(--text-subtle)"],
+:root[data-theme="light"] [style*="var(--text-muted)"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Sidebar alert notification — ensure text is readable in light mode */
+:root[data-theme="light"] .sidebar-alert-critical {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border-color: rgba(220, 38, 38, 0.20) !important;
+}
+
+/* Notification panel shadow improvement for light mode */
+:root[data-theme="light"] .notification-panel {
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Topbar subtitle in light mode — use secondary text, not tertiary */
+:root[data-theme="light"] .topbar__subtitle {
+  color: var(--text-secondary);
+}
+
+/* Topbar timestamp and backend pill in light mode */
+:root[data-theme="light"] .topbar [style*="text-subtle"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Landing page hero subtitle in light mode */
+:root[data-theme="light"] #hero p {
+  color: var(--text-secondary);
+}
+
+/* Maintenance table header in light mode */
+:root[data-theme="light"] .maintenance-table thead {
+  background: var(--surface-tertiary);
+  border-bottom: 2px solid var(--border-default);
+}
+
+/* Alert items — ensure background is visible in light mode */
+:root[data-theme="light"] .alert-recommendation {
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Filter pills in light mode */
+:root[data-theme="light"] .filter-pill--active {
+  background: rgba(8, 145, 178, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Chart containers in light mode */
+:root[data-theme="light"] .chart-container {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+/* Upload dropzone in light mode */
+:root[data-theme="light"] .upload-dropzone-active {
+  background: rgba(8, 145, 178, 0.05) !important;
+  border-color: var(--accent) !important;
+}
+
+/* SHAP chart label-list values in light mode */
+:root[data-theme="light"] .recharts-label-list text {
+  fill: var(--text-secondary) !important;
+}
+
+/* Ensure badge backgrounds remain visible in light mode */
+:root[data-theme="light"] .badge--normal {
+  background: rgba(22, 163, 74, 0.10);
+  color: #15803d;
+  border-color: rgba(22, 163, 74, 0.25);
+}
+:root[data-theme="light"] .badge--warning {
+  background: rgba(234, 88, 12, 0.10);
+  color: #b45309;
+  border-color: rgba(234, 88, 12, 0.25);
+}
+:root[data-theme="light"] .badge--critical {
+  background: rgba(220, 38, 38, 0.10);
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+/* Sidebar active nav item in light mode */
+:root[data-theme="light"] a[style*="var(--accent-glow)"] {
+  background: rgba(8, 145, 178, 0.08) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RECHARTS WATERFALL CHART — LIGHT MODE AXIS TEXT & GRID FIXES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Ensure recharts axis tick text is readable in light mode */
+:root[data-theme="light"] .recharts-cartesian-axis-tick text,
+:root[data-theme="light"] .recharts-cartesian-axis-tick-value {
+  fill: var(--text-secondary) !important;
+}
+
+/* Waterfall chart grid lines in light mode */
+:root[data-theme="light"] .recharts-cartesian-grid-horizontal line,
+:root[data-theme="light"] .recharts-cartesian-grid-vertical line {
+  stroke: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Waterfall zero reference line in light mode */
+:root[data-theme="light"] .recharts-reference-line line {
+  stroke: rgba(15, 23, 42, 0.30) !important;
+}
+
+/* Recharts chart background in light mode */
+:root[data-theme="light"] .recharts-wrapper .recharts-surface {
+  background: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HERO SECTION — LIGHT MODE: CSS ORB BLEND OVERRIDES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Orbs use multiply blend in light mode so they tint the light bg */
+:root[data-theme="light"] .orb-1,
+:root[data-theme="light"] .orb-2,
+:root[data-theme="light"] .orb-3 {
+  mix-blend-mode: multiply !important;
+  opacity: 0.4 !important;
+}

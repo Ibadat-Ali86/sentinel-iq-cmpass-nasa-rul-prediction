@@ -218,7 +218,7 @@ export function Sidebar() {
             <p style={{ fontSize: 12, fontWeight: 600, color: "var(--critical)" }}>
               {criticalCount} Unread Alert{criticalCount !== 1 ? "s" : ""}
             </p>
-            <p style={{ fontSize: 10, color: "var(--text-muted)" }}>Critical engines require attention</p>
+            <p style={{ fontSize: 10, color: "var(--text-secondary)" }}>Critical engines require attention</p>
           </div>
         </div>
       )}
