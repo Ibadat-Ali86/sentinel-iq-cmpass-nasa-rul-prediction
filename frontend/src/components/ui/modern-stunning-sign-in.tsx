@@ -137,59 +137,14 @@ function MetricBadge({
   );
 }
 
-// ── Quick-access demo role button ────────────────────────────────────────────
-function RoleButton({
-  label, email, password, color, description, onClick,
-}: {
-  label: string; email: string; password: string;
-  color: string; description: string;
-  onClick: (email: string, password: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(email, password)}
-      style={{
-        display: "flex", alignItems: "center", gap: 10,
-        width: "100%", background: `${color}0d`, border: `1px solid ${color}33`,
-        borderRadius: 10, padding: "10px 14px", cursor: "pointer",
-        transition: "all 200ms ease", textAlign: "left",
-      }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.background = `${color}1a`;
-        el.style.borderColor = `${color}55`;
-        el.style.transform = "translateY(-1px)";
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.background = `${color}0d`;
-        el.style.borderColor = `${color}33`;
-        el.style.transform = "translateY(0)";
-      }}
-    >
-      <div style={{
-        width: 28, height: 28, borderRadius: 6, background: `${color}22`,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>
-        <User size={14} style={{ color }} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9" }}>{label}</div>
-        <div style={{ fontSize: 10, color: "#64748b", marginTop: 1, fontFamily: "monospace" }}>
-          {email}
-        </div>
-      </div>
-      <ChevronRight size={13} style={{ color: "#475569", flexShrink: 0 }} />
-    </button>
-  );
-}
 
 // ── Main SignIn1 component ───────────────────────────────────────────────────
 const SignIn1 = () => {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, signup, isAuthenticated } = useAuth();
 
+  const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -200,29 +155,73 @@ const SignIn1 = () => {
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { if (isAuthenticated) router.replace("/dashboard"); }, [isAuthenticated, router]);
 
-  const handleSignIn = async (overrideEmail?: string, overridePassword?: string) => {
-    const e = overrideEmail ?? email;
-    const p = overridePassword ?? password;
+  const getPasswordStrength = () => {
+    let score = 0;
+    if (password.length > 0) {
+      if (password.length >= 8) score += 1;
+      if (/[A-Z]/.test(password)) score += 1;
+      if (/[0-9]/.test(password)) score += 1;
+      if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+    }
+    return score; 
+  };
+  const strength = password ? getPasswordStrength() : 0;
+  const strengthLabels = ["Weak", "Weak", "Fair", "Good", "Strong"];
+  const strengthColors = ["#ef4444", "#ef4444", "#f59e0b", "#3b82f6", "#10b981"];
 
-    // TESTING MODE: no validation — any credentials work
+  const validateForm = () => {
+    if (!isLogin && !name.trim()) {
+      setError("Please enter your full name.");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return false;
+    }
+    if (!isLogin && password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return false;
+    }
+    if (!isLogin && strength < 2) {
+      setError("Password is too weak. Please add numbers or uppercase letters.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignIn = async () => {
+    if (!validateForm()) return;
+    
     setError("");
     setStatus("loading");
-    const result = await login(e || "demo@sentineliq.com", p || "demo1234");
+    
+    let result;
+    if (isLogin) {
+      result = await login(email, password);
+    } else {
+      result = await signup(name, email, password);
+    }
+    
     if (result.success) {
       setStatus("success");
       setTimeout(() => router.push("/dashboard"), 800);
     } else {
       setStatus("idle");
-      setError(result.error ?? "An unexpected error occurred.");
+      
+      const errMsg = result.error?.toLowerCase() || "";
+      if (!isLogin && (errMsg.includes("already exists") || errMsg.includes("in use"))) {
+        setIsLogin(true);
+        setError("An account with this email already exists. Please sign in.");
+      } else {
+        setError(result.error ?? "An unexpected error occurred.");
+      }
     }
   };
-
-  const handleQuickLogin = (e: string, p: string) => {
-    setEmail(e);
-    setPassword(p);
-    handleSignIn(e, p);
-  };
-
   const handleKeyDown = (ev: React.KeyboardEvent) => {
     if (ev.key === "Enter") handleSignIn();
   };
@@ -230,19 +229,17 @@ const SignIn1 = () => {
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 44px 12px 40px",
     borderRadius: 10, fontSize: 14, fontWeight: 500,
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.10)",
-    color: "#f1f5f9",
+    background: "var(--surface-secondary)",
+    border: "1px solid var(--border-default)",
+    color: "var(--text-primary)",
     outline: "none", transition: "all 200ms ease",
     boxSizing: "border-box",
   };
 
-  const isDemoMode = true; // always true for testing
-
   return (
     <div style={{
       minHeight: "100dvh", display: "flex",
-      background: "#060b11",
+      background: "var(--surface-primary)",
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       {/* ── Left panel: hero ─────────────────────────────────────── */}
@@ -282,12 +279,12 @@ const SignIn1 = () => {
         <div style={{ position: "relative", zIndex: 2, maxWidth: 460 }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
-            background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.25)",
+            background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)",
             borderRadius: 99, padding: "5px 14px", marginBottom: 24,
           }}>
-            <div style={{ width: 7, height: 7, background: "#10b981", borderRadius: "50%", animation: "pulse 2s infinite" }} />
-            <span style={{ fontSize: 11, color: "#06b6d4", fontWeight: 700, letterSpacing: "0.08em" }}>
-              TESTING MODE · All Access Enabled
+            <Shield size={11} style={{ color: "#10b981" }} />
+            <span style={{ fontSize: 11, color: "#10b981", fontWeight: 700, letterSpacing: "0.08em" }}>
+              SECURE PLATFORM
             </span>
           </div>
 
@@ -297,10 +294,7 @@ const SignIn1 = () => {
             color: "#f1f5f9", marginBottom: 20,
           }}>
             Turbofan Engine{" "}
-            <span style={{
-              background: "linear-gradient(135deg, #06b6d4, #3b82f6, #a855f7)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>
+            <span className="bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500">
               RUL Intelligence
             </span>
           </h1>
@@ -333,7 +327,7 @@ const SignIn1 = () => {
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        background: "#080d14",
+        background: "var(--surface-primary)",
         padding: "48px 32px",
         position: "relative", overflow: "hidden",
       }}>
@@ -356,41 +350,50 @@ const SignIn1 = () => {
             }}>
               <Cpu size={18} color="white" />
             </div>
-            <div style={{ fontWeight: 800, fontSize: 17, color: "#f1f5f9" }}>SentinelIQ</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: "var(--text-primary)" }}>SentinelIQ</div>
           </div>
 
-          {/* Testing mode banner */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 10,
-            background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)",
-            borderRadius: 10, padding: "10px 14px", marginBottom: 28,
-          }}>
-            <CheckCircle2 size={15} style={{ color: "#10b981", flexShrink: 0 }} />
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981" }}>Testing Mode Active</div>
-              <div style={{ fontSize: 11, color: "#475569", marginTop: 1 }}>
-                All security checks bypassed — any credentials work
-              </div>
-            </div>
-          </div>
+          <div style={{ marginBottom: 28 }} />
 
           <h2 style={{
-            fontSize: 26, fontWeight: 800, color: "#f1f5f9",
+            fontSize: 26, fontWeight: 800, color: "var(--text-primary)",
             letterSpacing: "-0.025em", marginBottom: 6,
           }}>
-            Sign in to dashboard
+            {isLogin ? "Sign in to dashboard" : "Create your account"}
           </h2>
-          <p style={{ fontSize: 13, color: "#475569", marginBottom: 32 }}>
-            Enter any credentials or use a quick-access role below
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 32 }}>
+            {isLogin ? "Enter your credentials to securely access the platform." : "Sign up to access the predictive maintenance tools."}
           </p>
 
           {/* Form */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
+            {/* Name field (Sign Up only) */}
+            {!isLogin && (
+              <div style={{ position: "relative", animation: "fadeSlideIn 200ms ease" }}>
+                <User size={15} style={{
+                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                  color: "var(--text-tertiary)", pointerEvents: "none",
+                }} />
+                <input
+                  id="signup-name"
+                  type="text"
+                  placeholder="Full Name"
+                  autoComplete="name"
+                  value={name}
+                  onChange={e => { setName(e.target.value); setError(""); }}
+                  onKeyDown={handleKeyDown}
+                  style={inputStyle}
+                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px var(--focus-ring)"; }}
+                  onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "var(--border-default)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+                />
+              </div>
+            )}
+
             {/* Email field */}
             <div style={{ position: "relative" }}>
               <User size={15} style={{
                 position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#475569", pointerEvents: "none",
+                color: "var(--text-tertiary)", pointerEvents: "none",
               }} />
               <input
                 id="login-email"
@@ -401,8 +404,8 @@ const SignIn1 = () => {
                 onChange={e => { setEmail(e.target.value); setError(""); }}
                 onKeyDown={handleKeyDown}
                 style={inputStyle}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(6,182,212,0.50)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(6,182,212,0.10)"; }}
-                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.10)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px var(--focus-ring)"; }}
+                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "var(--border-default)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
               />
             </div>
 
@@ -410,32 +413,51 @@ const SignIn1 = () => {
             <div style={{ position: "relative" }}>
               <Lock size={15} style={{
                 position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#475569", pointerEvents: "none",
+                color: "var(--text-tertiary)", pointerEvents: "none",
               }} />
               <input
                 id="login-password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Password (any value)"
+                placeholder="Password"
                 autoComplete="current-password"
                 value={password}
                 onChange={e => { setPassword(e.target.value); setError(""); }}
                 onKeyDown={handleKeyDown}
                 style={{ ...inputStyle, paddingRight: 44 }}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(6,182,212,0.50)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(6,182,212,0.10)"; }}
-                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.10)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px var(--focus-ring)"; }}
+                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "var(--border-default)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(v => !v)}
                 style={{
                   position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-                  background: "transparent", border: "none", color: "#475569", cursor: "pointer",
+                  background: "transparent", border: "none", color: "var(--text-tertiary)", cursor: "pointer",
                   padding: 0, display: "flex", alignItems: "center",
                 }}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+
+            {/* Password Strength Indicator */}
+            {!isLogin && password && (
+              <div style={{ marginTop: 4, marginBottom: 8, animation: "fadeSlideIn 200ms ease" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 6, color: "var(--text-tertiary)" }}>
+                  <span>Password strength</span>
+                  <span style={{ color: strengthColors[strength], fontWeight: 600 }}>{strengthLabels[strength]}</span>
+                </div>
+                <div style={{ display: "flex", gap: 4, height: 4 }}>
+                  {[1, 2, 3, 4].map((point) => (
+                    <div key={point} style={{
+                      flex: 1, borderRadius: 2,
+                      background: strength >= point ? strengthColors[strength] : "var(--border-default)",
+                      transition: "all 300ms ease"
+                    }} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Error */}
             {error && (
@@ -480,54 +502,27 @@ const SignIn1 = () => {
                   (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
                 }}
               >
-                Access Dashboard <ArrowRight size={15} />
+                {isLogin ? "Access Dashboard" : "Create Account"} <ArrowRight size={15} />
               </button>
             )}
           </div>
 
-          {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-            <span style={{ fontSize: 11, color: "#334155", fontWeight: 600, whiteSpace: "nowrap" }}>
-              OR QUICK-ACCESS AS
-            </span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-          </div>
-
-          {/* Role quick-access */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 32 }}>
-            <RoleButton
-              label="Engineer (Full access)"
-              email="demo@sentineliq.com"
-              password="demo1234"
-              color="#06b6d4"
-              description="SHAP, anomalies, RUL dashboards"
-              onClick={handleQuickLogin}
-            />
-            <RoleButton
-              label="Admin (System management)"
-              email="admin@sentineliq.com"
-              password="admin1234"
-              color="#a855f7"
-              description="All features + user management"
-              onClick={handleQuickLogin}
-            />
-            <RoleButton
-              label="Operator (Fleet monitor)"
-              email="operator@sentineliq.com"
-              password="operator1234"
-              color="#10b981"
-              description="Fleet overview + alerts"
-              onClick={handleQuickLogin}
-            />
-          </div>
-
-          {/* Footer note */}
-          <p style={{ fontSize: 11, color: "#1e293b", textAlign: "center", lineHeight: 1.6 }}>
-            This is a testing environment. Authentication is fully open.
-            <br />
-            Swap <code style={{ background: "rgba(255,255,255,0.04)", padding: "1px 4px", borderRadius: 4 }}>AuthContext</code> to real JWT when deploying to production.
+          <p style={{ textAlign: "center", fontSize: 13, color: "var(--text-secondary)", marginTop: 10 }}>
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
+              type="button"
+              onClick={() => { setIsLogin(!isLogin); setError(""); }}
+              style={{
+                background: "none", border: "none", padding: 0,
+                color: "var(--color-primary)", fontWeight: 600, cursor: "pointer",
+                textDecoration: "underline", textUnderlineOffset: 2
+              }}
+            >
+              {isLogin ? "Sign up" : "Sign in"}
+            </button>
           </p>
+
+          {/* End of Form */}
         </div>
       </div>
     </div>

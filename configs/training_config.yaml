@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SentinelIQ — Training Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  model_output: "models"
+  reports: "reports/figures"
+
+# ── Training Loop ─────────────────────────────────────────────────────────────
+training:
+  epochs: 100
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 1.0e-4
+  patience: 15                  # early stopping — halt if val loss doesn't improve
+  val_split: 0.2                # fraction of training data used for validation
+  random_seed: 42
+
+# ── Optimizer ─────────────────────────────────────────────────────────────────
+optimizer:
+  name: "adam"
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+# ── Loss Function ─────────────────────────────────────────────────────────────
+loss:
+  name: "mse"                   # RMSE minimized — industry standard for RUL
+
+# ── Hardware ──────────────────────────────────────────────────────────────────
+hardware:
+  device: "auto"                # "auto" selects GPU if available, else CPU
+  num_workers: 4                # DataLoader workers
+  pin_memory: true
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"
+  log_dir: "logs"
+  mlflow_tracking: false        # set true to enable MLflow experiment tracking
+  mlflow_uri: "mlruns"

@@ -90,7 +90,6 @@
 }
 
 /* ── Dark Mode Tokens ─────────────────────────────────────────────── */
-:root,
 :root[data-theme="dark"] {
   /* Background layers */
   --surface-primary:   #080d14;
@@ -172,6 +171,7 @@
 }
 
 /* ── Light Mode Tokens ────────────────────────────────────────────── */
+:root,
 :root[data-theme="light"] {
   --surface-primary:   #ffffff;
   --surface-secondary: #f8fafc;

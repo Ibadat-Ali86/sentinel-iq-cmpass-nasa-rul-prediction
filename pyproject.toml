@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "sentineliq"
+version = "2.0.0"
+description = "Industrial-grade predictive maintenance platform for turbofan RUL forecasting using NASA C-MAPSS data"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "SentinelIQ Team" }]
+keywords = [
+    "predictive-maintenance",
+    "remaining-useful-life",
+    "nasa-cmapss",
+    "temporal-convolutional-network",
+    "shap",
+    "anomaly-detection",
+    "pytorch",
+    "fastapi",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn>=0.29.0",
+    "torch>=2.2.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.4.0",
+    "shap>=0.45.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0.1",
+    "matplotlib>=3.8.0",
+    "pulp>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
+    "pre-commit>=3.6.0",
+    "nbconvert>=7.0.0",
+    "detect-secrets>=1.4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/sentinel-iq-cmpass-nasa-rul-prediction"
+"Bug Reports" = "https://github.com/your-username/sentinel-iq-cmpass-nasa-rul-prediction/issues"
+Source = "https://github.com/your-username/sentinel-iq-cmpass-nasa-rul-prediction"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "ml_server*", "pipeline*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/__pycache__/*", "*/tests/*"]

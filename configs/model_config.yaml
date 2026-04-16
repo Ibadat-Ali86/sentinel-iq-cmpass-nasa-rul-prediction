@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SentinelIQ — Model Configuration
+# Temporal Convolutional Network (TCN) + Isolation Forest Ensemble
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── TCN Architecture ──────────────────────────────────────────────────────────
+tcn:
+  input_channels: 14            # sensor features after dropping zero-variance cols
+  output_size: 1                # single RUL prediction (regression)
+  num_channels: [64, 64, 32]    # dilated convolution channels per layer
+  kernel_size: 3
+  dropout: 0.2
+  sequence_length: 30           # rolling window in cycles
+
+# ── Isolation Forest (Anomaly Detection) ─────────────────────────────────────
+isolation_forest:
+  n_estimators: 200
+  max_samples: "auto"
+  contamination: 0.05           # expected ~5% anomaly rate in degraded engines
+  random_state: 42
+
+# ── SHAP Explainability ───────────────────────────────────────────────────────
+shap:
+  explainer: "deep"             # shap.DeepExplainer for PyTorch models
+  background_samples: 100       # number of background samples for baseline
+
+# ── RUL Label Configuration ───────────────────────────────────────────────────
+rul:
+  cap: 125                      # piecewise linear cap — cycles beyond this = healthy
+  dataset: "FD001"              # C-MAPSS subset (FD001 | FD002 | FD003 | FD004)

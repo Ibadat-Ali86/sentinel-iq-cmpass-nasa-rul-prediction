@@ -19,6 +19,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
@@ -63,6 +64,7 @@ const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false }),
+  signup: async () => ({ success: false }),
   logout: () => {},
 });
 
@@ -85,26 +87,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const signup = useCallback(
+    async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+      await new Promise((r) => setTimeout(r, 800)); // Simulate network request
+
+      const emailKey = (email || "").toLowerCase().trim();
+      const existingUsersStr = localStorage.getItem("sentineliq-users") || "{}";
+      const existingUsers = JSON.parse(existingUsersStr);
+      
+      if (DEMO_USERS[emailKey] || existingUsers[emailKey]) {
+        return { success: false, error: "User already exists with this email." };
+      }
+      
+      const newUser = {
+         password,
+         user: {
+           id: `usr_${Math.random().toString(36).slice(2, 8)}`,
+           name: name || "New User",
+           email: email,
+           role: "operator" as UserRole,
+           company: "AeroTech Industries"
+         }
+      };
+      
+      existingUsers[emailKey] = newUser;
+      localStorage.setItem("sentineliq-users", JSON.stringify(existingUsers));
+      
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser.user));
+      setUser(newUser.user);
+      return { success: true };
+    },
+    []
+  );
+
   const login = useCallback(
     async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-      // ── TESTING MODE: All security constraints removed ────────────────────────
-      // Any email/password combination succeeds. Role is inferred from known demo
-      // accounts; unknown emails default to the engineer profile.
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 800)); // Simulate network request
 
-      const emailKey = (email || "demo@sentineliq.com").toLowerCase().trim();
-      const knownEntry = DEMO_USERS[emailKey];
+      const emailKey = (email || "").toLowerCase().trim();
+      const existingUsersStr = localStorage.getItem("sentineliq-users") || "{}";
+      const existingUsers = JSON.parse(existingUsersStr);
 
-      const authUser: AuthUser = knownEntry
-        ? knownEntry.user
-        : {
-            id: `usr_${Math.random().toString(36).slice(2, 8)}`,
-            name: emailKey.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Test User",
-            email: emailKey || "demo@sentineliq.com",
-            role: "engineer",
-            company: "AeroTech Industries",
-          };
+      const knownEntry = DEMO_USERS[emailKey] || existingUsers[emailKey];
 
+      if (!knownEntry || knownEntry.password !== password) {
+        return { success: false, error: "Invalid email or password." };
+      }
+
+      const authUser: AuthUser = knownEntry.user;
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
       setUser(authUser);
       return { success: true };
@@ -120,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, isLoading, login, logout }}
+      value={{ user, isAuthenticated: !!user, isLoading, login, signup, logout }}
     >
       {children}
     </AuthContext.Provider>

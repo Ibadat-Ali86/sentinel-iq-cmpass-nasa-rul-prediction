@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { InferenceProvider } from "@/context/InferenceContext";
+import { AuthGuard } from "@/components/AuthGuard";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 const inter = Inter({
@@ -52,7 +53,7 @@ export default function RootLayout({
             __html: `(function(){
               try {
                 document.documentElement.classList.add('no-transitions');
-                var saved = localStorage.getItem('sentineliq-theme') || 'dark';
+                var saved = localStorage.getItem('sentineliq-theme') || 'light';
                 document.documentElement.setAttribute('data-theme', saved);
               } catch(e){}
               requestAnimationFrame(function(){
@@ -71,7 +72,9 @@ export default function RootLayout({
           <AuthProvider>
             <NotificationsProvider>
               <InferenceProvider>
-                {children}
+                <AuthGuard>
+                  {children}
+                </AuthGuard>
               </InferenceProvider>
             </NotificationsProvider>
           </AuthProvider>

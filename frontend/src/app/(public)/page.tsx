@@ -581,9 +581,7 @@ export default function LandingPage() {
                   marginBottom: "1.2rem", letterSpacing: "-0.03em",
                 }} className="flex flex-col items-center">
                   <SparklesText text="Predict Engine Failure" />
-                  <span style={{
-                    background: "linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  <span className={`bg-clip-text text-transparent bg-gradient-to-br ${isDark ? "from-cyan-500 via-blue-500 to-purple-500" : "from-cyan-600 via-blue-600 to-purple-600"}`} style={{
                     display: "block", minHeight: "1.2em",
                   }}>
                     {typeText}
@@ -603,8 +601,8 @@ export default function LandingPage() {
                 transition: "opacity 0.6s ease 0.25s, transform 0.6s ease 0.25s",
               }}>
                 <p style={{
-                  fontSize: "1.05rem", color: textSecondary, lineHeight: 1.75,
-                  maxWidth: 520, margin: "0 auto 2rem",
+                  fontSize: "1.05rem", color: isDark ? "#e2e8f0" : "#475569", lineHeight: 1.75,
+                  maxWidth: 520, margin: "0 auto 2rem", fontWeight: 500
                 }}>
                   Industrial-grade predictive maintenance powered by TCN deep learning.
                   Monitor your turbofan fleet in real-time with SHAP explainability and
@@ -631,10 +629,11 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/upload" className="hover-btn-ghost" style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
-                  border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(15,23,42,0.15)",
-                  color: textSecondary,
+                  border: isDark ? "1px solid rgba(255,100,100,0.0)" : "1px solid rgba(15,23,42,0.15)",
+                  background: isDark ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: isDark ? "#ffffff" : textSecondary,
                   textDecoration: "none", padding: "13px 26px", borderRadius: 10,
-                  fontWeight: 600, fontSize: 15, background: "transparent",
+                  fontWeight: 600, fontSize: 15,
                 }}>
                   <Upload size={15} /> Try Live Upload
                 </Link>
@@ -716,16 +715,13 @@ export default function LandingPage() {
               <p style={{ fontSize: 12, color: isDark ? "#06b6d4" : "#0891b2", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>
                 Capabilities
               </p>
-              <h2 style={{
+              <h2 className={`bg-clip-text text-transparent bg-gradient-to-br ${isDark ? "from-slate-100 to-slate-400" : "from-slate-900 to-slate-600"}`} style={{
                 fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.03em",
-                background: isDark
-                  ? "linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%)"
-                  : "linear-gradient(135deg, #0f172a 0%, #475569 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                display: "inline-block"
               }}>
                 Everything your fleet needs
               </h2>
-              <p style={{ fontSize: 16, color: textSecondary, marginTop: 14, maxWidth: 520, margin: "14px auto 0" }}>
+              <p style={{ fontSize: 16, color: isDark ? "#cbd5e1" : "#475569", marginTop: 14, maxWidth: 520, margin: "14px auto 0", fontWeight: 500 }}>
                 From raw sensor data to actionable maintenance decisions — fully automated.
               </p>
             </div>
@@ -739,7 +735,7 @@ export default function LandingPage() {
                 subtitle: "Know exactly how many cycles remain",
                 desc: "TCN ensemble model achieves RMSE ≤ 13 cycles on NASA C-MAPSS. Bidirectional LSTM baseline included for comparison.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
                     <AreaChart data={heroChartData.slice(0, 15)} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                       <defs>
                         <linearGradient id="feat-rul" x1="0" y1="0" x2="0" y2="1">
@@ -761,7 +757,7 @@ export default function LandingPage() {
                 subtitle: "Catch failures before thresholds breach",
                 desc: "Isolation Forest + Autoencoder ensemble achieves F1 ≥ 0.88. Real-time anomaly scoring with SHAP attribution.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
                     <BarChart data={anomalyData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={2000}>
                         {anomalyData.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.85} />)}
@@ -778,7 +774,7 @@ export default function LandingPage() {
                 subtitle: "MILP scheduling saves 10× failure cost",
                 desc: "PuLP MILP solver optimizes maintenance windows. Preventive cost $5K vs failure cost $50K — maximise fleet availability.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
                     <BarChart data={maintenanceData} layout="vertical" margin={{ top: 4, right: 0, bottom: 0, left: 60 }}>
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="label" tick={{ fill: textSecondary, fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -811,7 +807,7 @@ export default function LandingPage() {
                   </div>
                   <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, color: textPrimary }}>{title}</h3>
                   <p style={{ fontSize: 13, color, fontWeight: 600, marginBottom: 10 }}>{subtitle}</p>
-                  <p style={{ fontSize: 13, color: textSecondary, lineHeight: 1.7, marginBottom: 18 }}>{desc}</p>
+                  <p style={{ fontSize: 13, color: isDark ? "#cbd5e1" : textSecondary, lineHeight: 1.7, marginBottom: 18, fontWeight: 500 }}>{desc}</p>
                   <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: 16 }}>
                     {chart}
                   </div>
@@ -830,12 +826,9 @@ export default function LandingPage() {
               <p style={{ fontSize: 12, color: isDark ? "#06b6d4" : "#0891b2", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>
                 How It Works
               </p>
-              <h2 style={{
+              <h2 className={`bg-clip-text text-transparent bg-gradient-to-br ${isDark ? "from-slate-100 to-slate-400" : "from-slate-900 to-slate-600"}`} style={{
                 fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.03em",
-                background: isDark
-                  ? "linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%)"
-                  : "linear-gradient(135deg, #0f172a 0%, #475569 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                display: "inline-block"
               }}>
                 From sensor to decision in 3 steps
               </h2>
@@ -887,7 +880,7 @@ export default function LandingPage() {
                     textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10,
                   }}>{step}</div>
                   <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: textPrimary }}>{title}</h3>
-                  <p style={{ fontSize: 14, color: textSecondary, lineHeight: 1.7 }}>{desc}</p>
+                  <p style={{ fontSize: 14, color: isDark ? "#cbd5e1" : textSecondary, lineHeight: 1.7, fontWeight: 500 }}>{desc}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -938,17 +931,14 @@ export default function LandingPage() {
               position: "relative", overflow: "hidden",
             }}>
               <div className="orb-1" style={{ top: "-60%", left: "10%", opacity: 0.35 }} />
-              <h2 style={{
+              <h2 className={`bg-clip-text text-transparent bg-gradient-to-br ${isDark ? "from-slate-100 to-slate-400" : "from-slate-900 to-slate-600"}`} style={{
                 fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 800,
                 letterSpacing: "-0.03em", marginBottom: "1rem", position: "relative",
-                background: isDark
-                  ? "linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%)"
-                  : "linear-gradient(135deg, #0f172a 0%, #475569 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                display: "inline-block"
               }}>
                 Start monitoring your fleet today
               </h2>
-              <p style={{ fontSize: 16, color: textSecondary, marginBottom: "2.5rem", lineHeight: 1.7, position: "relative" }}>
+              <p style={{ fontSize: 16, color: isDark ? "#e2e8f0" : textSecondary, marginBottom: "2.5rem", lineHeight: 1.7, position: "relative", fontWeight: 500 }}>
                 Predict failures before they happen. Reduce maintenance costs.<br />
                 Keep your turbofan fleet operational.
               </p>
@@ -965,10 +955,11 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/upload" style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
-                  border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(15,23,42,0.15)",
-                  color: textSecondary,
+                  border: isDark ? "1px solid rgba(255,255,255,0.0)" : "1px solid rgba(15,23,42,0.15)",
+                  background: isDark ? "rgba(255,255,255,0.1)" : "transparent",
+                  color: isDark ? "#ffffff" : textSecondary,
                   textDecoration: "none", padding: "14px 28px", borderRadius: 12,
-                  fontWeight: 600, fontSize: 15, background: "transparent",
+                  fontWeight: 600, fontSize: 15,
                 }} className="hover-btn-ghost">
                   <Upload size={15} /> Try Live Upload
                 </Link>
