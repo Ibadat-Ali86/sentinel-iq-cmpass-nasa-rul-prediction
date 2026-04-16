@@ -1,0 +1,39 @@
+# Exclude Python backend, ML artifacts, and data from Vercel build
+ml_server/
+src/
+pipeline/
+configs/
+data/
+models/
+outputs/
+reports/
+notebooks/
+tests/
+db/
+nginx/
+docs/
+test_datasets/
+
+# Python artifacts
+*.py
+*.pyc
+__pycache__/
+*.pth
+*.pkl
+*.h5
+*.pt
+
+# Config / environment files
+requirements.txt
+pyproject.toml
+Dockerfile
+docker-compose.yml
+Makefile
+entrypoint.sh
+*.sh
+
+# Misc
+*.md
+LICENSE
+.env
+.env.example
