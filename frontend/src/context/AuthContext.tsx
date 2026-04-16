@@ -87,13 +87,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-      // Simulate network latency so the user can see the Orbital Loader they requested
-      await new Promise((r) => setTimeout(r, 1500));
+      // ── TESTING MODE: All security constraints removed ────────────────────────
+      // Any email/password combination succeeds. Role is inferred from known demo
+      // accounts; unknown emails default to the engineer profile.
+      await new Promise((r) => setTimeout(r, 1000));
 
-      const emailKey = email.toLowerCase().trim();
-      const entry = DEMO_USERS[emailKey] || DEMO_USERS["demo@sentineliq.com"];
+      const emailKey = (email || "demo@sentineliq.com").toLowerCase().trim();
+      const knownEntry = DEMO_USERS[emailKey];
 
-      const authUser = entry.user;
+      const authUser: AuthUser = knownEntry
+        ? knownEntry.user
+        : {
+            id: `usr_${Math.random().toString(36).slice(2, 8)}`,
+            name: emailKey.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Test User",
+            email: emailKey || "demo@sentineliq.com",
+            role: "engineer",
+            company: "AeroTech Industries",
+          };
+
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
       setUser(authUser);
       return { success: true };
