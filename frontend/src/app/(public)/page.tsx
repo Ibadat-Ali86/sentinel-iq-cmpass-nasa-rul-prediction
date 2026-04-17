@@ -15,6 +15,7 @@ import { SparklesText } from "@/components/ui/sparkles-text";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 import { TurbofanEngineHero } from "@/components/ui/turbofan-engine-hero";
 import { useTheme } from "@/context/ThemeContext";
+import { fetchHealth } from "@/lib/api";
 
 // ── Mock data for live charts ─────────────────────────────────────────────────
 const heroChartData = Array.from({ length: 30 }, (_, i) => ({
@@ -482,6 +483,13 @@ export default function LandingPage() {
 
   useEffect(() => {
     const t = setTimeout(() => setHeroLoaded(true), 100);
+    
+    // Silently ping the Hugging Face space to wake it up while the user reads the page
+    fetchHealth().catch(() => {
+      // Intentionally ignoring errors here, it's just a background warmup ping
+      console.log("Warmup ping fired...");
+    });
+    
     return () => clearTimeout(t);
   }, []);
 

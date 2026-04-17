@@ -20,14 +20,34 @@ const BASE_URL =
 
 // ── low-level fetch helper ────────────────────────────────────────────────────
 
+/**
+ * Custom fetch wrapper with 8-second timeout.
+ * Vercel Hobby tier drops connections after 10s. By aborting at 8s,
+ * we can elegantly catch the timeout and return a mock/custom error to the UI
+ * indicating that the Hugging Face space is waking from sleep.
+ */
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return res.json() as Promise<T>;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json() as Promise<T>;
+  } catch (error: any) {
+    clearTimeout(id);
+    if (error.name === "AbortError") {
+      throw new Error("503 Waking Up Hugging Face Space. Please retry in 1 minute.");
+    }
+    throw error;
+  }
 }
 
 // ── public API ────────────────────────────────────────────────────────────────
