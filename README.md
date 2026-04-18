@@ -152,18 +152,34 @@ cd frontend && npm install && npm run dev
 | Model                  | RMSE (cycles) | MAE (cycles) | NASA Score | Training Time |
 |------------------------|:-------------:|:------------:|:----------:|:-------------:|
 | Baseline (Linear)      | 31.4          | 24.8         | 3,481      | < 1s          |
-| LSTM (Bidirectional)   | 17.2          | 13.1         | 621        | ~8 min        |
-| **TCN Ensemble (Ours)**| **12.8**      | **9.7**      | **284**    | ~4 min        |
+| TCN Ensemble           | 16.48         | 12.44        | 517.4      | ~4 min        |
+| **LSTM (Bidirectional)**| **14.37**     | **11.25**    | **355.3**  | ~8 min        |
+
+*The LSTM achieved the optimal score for the FD001 run, establishing the production model checkpoint.*
 
 > Full evaluation notebook: [`notebooks/03_model_evaluation.ipynb`](notebooks/03_model_evaluation.ipynb)
 
-### System Performance
+### Model Accuracy & Predictions
 
-| Metric                  | Target    | Actual       |
-|-------------------------|-----------|--------------|
-| RUL Forecasting RMSE    | < 15 cycles | **~12.8 cycles** |
-| Anomaly Detection F1    | > 0.85    | **0.88**     |
-| API Inference Latency   | < 500ms   | **~140ms**   |
+![Predicted vs Actual RUL](outputs/eval_pred_vs_actual.png)
+
+![Remaining Useful Life Error Metrics](outputs/eval_metrics_comparison.png)
+
+### System Performance & Operations
+
+| Metric                      | Target         | Actual               |
+|-----------------------------|----------------|----------------------|
+| RUL Forecasting RMSE        | < 15 cycles    | **14.37 cycles**     |
+| API Inference Latency       | < 500ms        | **~140ms**           |
+| Anomaly Critical States     | Detection      | **6 detected**       |
+| Unplanned Fleet Maint. Cost | Minimize       | **$124,800.00** ❌     |
+| **SentinelIQ Fleet Cost**   | Maximize ROI   | **$86,600.00** ✅      |
+
+*By analyzing 10 combined engine run-to-failure lifecycles, SentinelIQ prescriptive forecasting yielded **$38,200 (30.6%) in cost savings** vs naive reactive models.*
+
+### Anomaly Subsystem (Autoencoder + Isolation Forest)
+
+![Anomaly Scoring Dashboard](outputs/eval_anomaly_scores.png)
 
 ### Key Findings
 
