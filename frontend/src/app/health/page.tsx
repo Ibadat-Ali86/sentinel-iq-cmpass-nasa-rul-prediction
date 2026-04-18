@@ -113,7 +113,7 @@ export default function HealthPage() {
             </div>
             {/* V2.0 Spec: 350px chart height */}
             <div style={{ height: 350, padding: "16px 8px 8px" }} role="img" aria-label="Fleet RUL trajectory over 7 days">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <AreaChart
                   data={Array.from({ length: 30 }, (_, i) => ({
                     day: `D${i+1}`,

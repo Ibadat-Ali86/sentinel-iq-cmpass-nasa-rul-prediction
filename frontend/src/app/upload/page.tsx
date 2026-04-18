@@ -77,7 +77,7 @@ function mockRunInference(fileName: string): Promise<UnitResult[]> {
 /* ── Mini spark chart ───────────────────────────────────────────────────────── */
 function MiniTrend({ data, color }: { data: { cycle: number; rul: number }[]; color: string }) {
   return (
-    <ResponsiveContainer width="100%" height={48}>
+    <ResponsiveContainer width="100%" height={48} minWidth={1} minHeight={1}>
       <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={`spark-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
@@ -834,7 +834,7 @@ export default function UploadPage() {
                       <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
                         RUL Trend
                       </p>
-                      <ResponsiveContainer width="100%" height={120}>
+                      <ResponsiveContainer width="100%" height={120} minWidth={1} minHeight={1}>
                         <AreaChart data={selectedUnit.trend} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                           <defs>
                             <linearGradient id="detail-trend" x1="0" y1="0" x2="0" y2="1">
@@ -861,7 +861,7 @@ export default function UploadPage() {
                         <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
                           Fleet Distribution
                         </p>
-                        <ResponsiveContainer width="100%" height={70}>
+                        <ResponsiveContainer width="100%" height={70} minWidth={1} minHeight={1}>
                           <BarChart data={distData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                             <XAxis dataKey="name" tick={{ fill: "var(--text-subtle)", fontSize: 10 }} axisLine={false} tickLine={false} />
                             <Bar dataKey="value" radius={[4, 4, 0, 0]}>

@@ -743,7 +743,7 @@ export default function LandingPage() {
                 subtitle: "Know exactly how many cycles remain",
                 desc: "TCN ensemble model achieves RMSE ≤ 13 cycles on NASA C-MAPSS. Bidirectional LSTM baseline included for comparison.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
                     <AreaChart data={heroChartData.slice(0, 15)} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                       <defs>
                         <linearGradient id="feat-rul" x1="0" y1="0" x2="0" y2="1">
@@ -765,7 +765,7 @@ export default function LandingPage() {
                 subtitle: "Catch failures before thresholds breach",
                 desc: "Isolation Forest + Autoencoder ensemble achieves F1 ≥ 0.88. Real-time anomaly scoring with SHAP attribution.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
                     <BarChart data={anomalyData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={2000}>
                         {anomalyData.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.85} />)}
@@ -782,7 +782,7 @@ export default function LandingPage() {
                 subtitle: "MILP scheduling saves 10× failure cost",
                 desc: "PuLP MILP solver optimizes maintenance windows. Preventive cost $5K vs failure cost $50K — maximise fleet availability.",
                 chart: (
-                  <ResponsiveContainer width="100%" height={100} minWidth={0} minHeight={0}>
+                  <ResponsiveContainer width="100%" height={100} minWidth={1} minHeight={1}>
                     <BarChart data={maintenanceData} layout="vertical" margin={{ top: 4, right: 0, bottom: 0, left: 60 }}>
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="label" tick={{ fill: textSecondary, fontSize: 10 }} axisLine={false} tickLine={false} />

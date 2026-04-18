@@ -145,7 +145,7 @@ export function StatCard({
       {/* V2.0 Spec: 7-day sparkline (60px height) */}
       {chartData.length > 0 && (
         <div style={{ height: 60, marginTop: 2, marginLeft: -4, marginRight: -4 }} aria-hidden="true">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id={`spark-${label.replace(/\s/g, "")}`} x1="0" y1="0" x2="0" y2="1">

@@ -264,7 +264,7 @@ export function SHAPChart({ data, title = "SHAP Waterfall — Feature Contributi
 
       {/* ── V2.0 Waterfall Chart (Horizontal bar — signed +/-) */}
       <div style={{ height: 420, position: "relative" }} role="img" aria-label="SHAP waterfall chart showing sensor contributions to RUL prediction">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <BarChart
             data={waterfallEntries}
             layout="vertical"
