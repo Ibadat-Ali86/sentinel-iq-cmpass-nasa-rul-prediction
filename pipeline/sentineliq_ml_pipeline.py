@@ -54,7 +54,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from src.config import Config
 from src.data_loader import CMAPSSLoader
 from src.features import FeatureEngineer
-from src.models import CMAPSSDataset, CMAPSSDataset_MultiTask
+from src.models import CMAPSSDataset, CMAPSSDataset_MultiTask, CMAPSSTestDataset
 from src.trainer import ModelTrainer
 from src.evaluator import ModelEvaluator
 from src.anomaly import AnomalyDetector
@@ -114,7 +114,7 @@ def build_dataloaders(
 
     train_ds = CMAPSSDataset(train_sub, feature_cols, config.sequence_length)
     val_ds = CMAPSSDataset(val_sub, feature_cols, config.sequence_length)
-    test_ds = CMAPSSDataset(test_df, feature_cols, config.sequence_length)
+    test_ds = CMAPSSTestDataset(test_df, feature_cols, config.sequence_length)
 
     train_loader = DataLoader(train_ds, batch_size=config.batch_size, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=config.batch_size, num_workers=0)

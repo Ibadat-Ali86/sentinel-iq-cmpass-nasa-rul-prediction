@@ -4,7 +4,7 @@
 # Run: make <target>
 # ─────────────────────────────────────────────────────────────────────────────
 
-.PHONY: install lint test train evaluate clean docker-up docker-down help
+.PHONY: install lint test train evaluate clean docker-up docker-down help notebooks
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
 
@@ -45,18 +45,18 @@ download-data:
 # ── ML Pipeline ───────────────────────────────────────────────────────────────
 
 train:
-	python -m pipeline.run_pipeline --config configs/training_config.yaml
+	python -m pipeline.sentineliq_ml_pipeline --config configs/training_config.yaml
 	@echo "✅ Training complete — model saved to models/"
 
 evaluate:
-	python -m pipeline.run_pipeline --config configs/training_config.yaml --evaluate-only
+	python -m pipeline.sentineliq_ml_pipeline --config configs/training_config.yaml --evaluate-only
 	python src/visualization/visualize.py
 	@echo "✅ Evaluation and figures saved to reports/figures/"
 
 notebooks:
-	jupyter nbconvert --to notebook --execute notebooks/01_data_exploration.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/02_feature_engineering.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/03_model_evaluation.ipynb
+	jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=sentineliq notebooks/01_data_exploration.ipynb
+	jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=sentineliq notebooks/02_feature_engineering.ipynb
+	jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=sentineliq notebooks/03_model_evaluation.ipynb
 	@echo "✅ Notebooks executed"
 
 # ── API Server ────────────────────────────────────────────────────────────────

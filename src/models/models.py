@@ -123,6 +123,44 @@ class CMAPSSDataset_MultiTask(Dataset):
         return self.sequences[idx], self.targets[idx], self.failure_modes[idx]
 
 
+class CMAPSSTestDataset(Dataset):
+    """
+    Dataset for test evaluation.
+    Only extracts the final sequence of each unit, as true RUL is only available
+    for the end of the test trajectory.
+    """
+
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        feature_cols: List[str],
+        sequence_length: int,
+    ):
+        sequences: List[np.ndarray] = []
+        targets: List[float] = []
+
+        for unit_id in df["unit_id"].unique():
+            unit_data = df[df["unit_id"] == unit_id].sort_values("cycle")
+            features = unit_data[feature_cols].values
+
+            if len(features) >= sequence_length:
+                sequences.append(features[-sequence_length:])
+            else:
+                pad = np.zeros((sequence_length - len(features), len(feature_cols)))
+                sequences.append(np.vstack((pad, features)))
+
+            targets.append(0.0)  # Dummy target
+
+        self.sequences = torch.FloatTensor(np.array(sequences))
+        self.targets = torch.FloatTensor(np.array(targets))
+
+    def __len__(self) -> int:
+        return len(self.sequences)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self.sequences[idx], self.targets[idx]
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SECTION 2 — LSTM Baseline (Phase 1–7)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
