@@ -49,7 +49,7 @@ NASA C-MAPSS Raw Data (data/raw/)
     → TCN Ensemble Training (src/models/)
     → Isolation Forest Anomaly Layer (src/models/)
     → SHAP DeepExplainer (ml_server/services/)
-    → FastAPI Inference Server (:8000)
+    → FastAPI Inference Server (:7860)
     → Next.js Dashboard (:3000) ← NGINX (:80)
     → PostgreSQL (results + history)
 ```
@@ -94,7 +94,7 @@ make docker-up
 # Services:
 #   Dashboard  → http://localhost
 #   API docs   → http://localhost/api/docs
-#   FastAPI    → http://localhost:8000
+#   FastAPI    → http://localhost:7860
 ```
 
 ### Option 2: Local Development

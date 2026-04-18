@@ -15,7 +15,7 @@
 set -euo pipefail
 
 HOST="${ML_SERVER_HOST:-0.0.0.0}"
-PORT="${ML_SERVER_PORT:-8000}"
+PORT="${ML_SERVER_PORT:-7860}"
 WORKERS="${UVICORN_WORKERS:-2}"
 
 # ── Wait for PostgreSQL ───────────────────────────────────────────────────────

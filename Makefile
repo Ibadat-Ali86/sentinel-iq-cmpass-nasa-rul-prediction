@@ -62,10 +62,10 @@ notebooks:
 # ── API Server ────────────────────────────────────────────────────────────────
 
 api:
-	uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 8000
+	uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 7860
 
 api-prod:
-	uvicorn ml_server.main:app --host 0.0.0.0 --port 8000 --workers 4
+	uvicorn ml_server.main:app --host 0.0.0.0 --port 7860 --workers 4
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 

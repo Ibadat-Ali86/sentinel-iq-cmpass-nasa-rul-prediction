@@ -71,12 +71,12 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     ML_SERVER_HOST=0.0.0.0 \
-    ML_SERVER_PORT=8000
+    ML_SERVER_PORT=7860
 
-EXPOSE 8000
+EXPOSE 7860
 
 # Docker health check — pings the /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:7860/health || exit 1
 
 ENTRYPOINT ["./entrypoint.sh"]

@@ -6,17 +6,17 @@ Starts the SentinelIQ ML inference server.
 
 Usage:
     # Development (auto-reload)
-    uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 8000
+    uvicorn ml_server.main:app --reload --host 0.0.0.0 --port 7860
 
     # Production
-    uvicorn ml_server.main:app --host 0.0.0.0 --port 8000 --workers 2
+    uvicorn ml_server.main:app --host 0.0.0.0 --port 7860 --workers 2
 
     # Docker (see Dockerfile)
-    docker run -p 8000:8000 sentineliq-server
+    docker run -p 7860:7860 sentineliq-server
 
 API Documentation:
-    http://localhost:8000/docs      — Swagger UI
-    http://localhost:8000/redoc     — ReDoc
+    http://localhost:7860/docs      — Swagger UI
+    http://localhost:7860/redoc     — ReDoc
 
 Author: SentinelIQ Team
 Version: 2.0
@@ -90,7 +90,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Device          : %s", svc.device_str)
     logger.info("Active features : %d", len(svc.feature_cols))
-    logger.info("Docs available  : http://localhost:8000/docs")
+    logger.info("Docs available  : http://localhost:7860/docs")
     logger.info("=" * 60)
 
     yield  # Server is running
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "ml_server.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=7860,
         reload=True,
         log_level="info",
     )

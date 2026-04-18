@@ -16,7 +16,7 @@ import type {
 } from "@/types/sentineliq";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_ML_SERVER_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_ML_SERVER_URL ?? "http://localhost:7860";
 
 // ── low-level fetch helper ────────────────────────────────────────────────────
 

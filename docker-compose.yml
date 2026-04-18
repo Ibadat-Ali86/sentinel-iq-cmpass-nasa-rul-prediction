@@ -4,7 +4,7 @@
 # Services:
 #   postgres   — local PostgreSQL 16 database
 #   ml_server  — FastAPI / Uvicorn ML inference server
-#   nginx      — Nginx reverse proxy (port 80 → ml_server:8000)
+#   nginx      — Nginx reverse proxy (port 80 → ml_server:7860)
 #
 # Usage:
 #   cp .env.example .env && nano .env    # fill in secrets
@@ -53,7 +53,7 @@ services:
       # Override DATABASE_URL to use the compose-internal postgres service name
       DATABASE_URL: postgresql+asyncpg://sentineliq:sentineliq@postgres:5432/sentineliq
       ML_SERVER_HOST: "0.0.0.0"
-      ML_SERVER_PORT: "8000"
+      ML_SERVER_PORT: "7860"
       UVICORN_WORKERS: "2"
       PYTHONPATH: /app
     volumes:
@@ -61,12 +61,12 @@ services:
       - ./models:/app/models         # model checkpoints
       - ./outputs:/app/outputs       # plots, reports
     ports:
-      - "8000:8000"                  # direct access during dev; nginx handles prod
+      - "7860:7860"                  # direct access during dev; nginx handles prod
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s
       timeout: 10s
       retries: 3
